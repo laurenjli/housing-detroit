@@ -1,17 +1,6 @@
 #This file contains functions to create visualizations on blight, demolitions, and 
 #side lot sales in Detroit, Michigan. 
 
-#Requirements
-
-#five different aesthetics: x, y, size, color, group
-#five different non-aesthetic options: stat, color, size, vjust, alpha
-#four different geoms: geom_point, geom_line, geom_segment, geom_text
-#two different scales: scale_size, scale_y_continuous
-
-#narrative graph title (labs(title=))
-#an explanatory subtitle (labs(subtitle=))
-#explicit data sourcing. (labs(caption=))
-#labels and scales for all visual encodings.
 
 library(tidyverse)
 library(here)
