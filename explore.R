@@ -1,16 +1,12 @@
 #This file contains functions to create visualizations on blight, demolitions, and 
 #side lot sales in Detroit, Michigan. 
 
-#To Do:
-#Change another scale
-#Fix labels on last graph!!
-
 #Requirements
 
 #five different aesthetics: x, y, size, color, group
-#five different non-aesthetic options: stat, color, alpha, size, se
-#four different geoms: geom_point, geom_line, geom_segment, geom_smooth
-#two different scales (meaning change the scale option for at least two of the scales): need to do this
+#five different non-aesthetic options: stat, color, size, vjust, alpha
+#four different geoms: geom_point, geom_line, geom_segment, geom_text
+#two different scales: scale_size, scale_y_continuous
 
 #narrative graph title (labs(title=))
 #an explanatory subtitle (labs(subtitle=))
@@ -47,16 +43,17 @@ blight_tix_graph <- blight_tix %>%
   filter(count > 10000)
 
 blight_plot <- blight_tix_graph %>%
-  ggplot(aes(x=factor(`Violation Description`, levels = blight_tix_graph$`Violation Description`), y=amount)) + 
+  ggplot(aes(x=factor(`Violation Description`, levels = blight_tix_graph$`Violation Description`), y=amount)) +
   geom_segment(aes(x=factor(`Violation Description`, levels = blight_tix_graph$`Violation Description`), xend=(factor(`Violation Description`, levels = blight_tix_graph$`Violation Description`)), y=0, yend=amount), color = 'gray', size=1.25) +
   geom_point(stat='identity', color='orange',size=3) + 
+  geom_text(aes(label = round(amount)), vjust = -1, size=3, alpha=0.5) +
   theme_light() +
   coord_flip() +
-  #scale_y_discrete(breaks = c(0,250,500,750,1000,1250, 1500)) +
-  labs(title = 'High Penalties on Waste Pileup in Detroit', subtitle ='Most frequent blight violations since 2006', y='Average Fine Amount', x = 'Violation Description', caption='Data Source: Detroit Open Data Portal')
+  labs(title = 'High Penalties on Waste Pileup in Detroit', subtitle ='Most frequent blight violations since 2006', x = 'Violation Description', caption='Data Source: Detroit Open Data Portal') +
+  scale_y_continuous(name = 'Average Fine Amount', breaks = c(0,250,500,750,1000,1250, 1500), labels = c('$0','$250','$500','$750','$1000', '$1250', '$1500'))
   
   
-ggsave(here('output','blight.pdf'), plot = blight_plot, dpi = 100, width = 8, height = 6, units = "in")
+ggsave(here('output','blight.pdf'), plot = blight_plot, dpi = 100, width = 8, height = 5, units = "in")
 
 
 
@@ -93,7 +90,6 @@ all <- intersect(neighborhoods_2016$Neighborhood, neighborhoods_2017$Neighborhoo
 neighborhoods <- intersect(all,neighborhoods_2018$Neighborhood)
 
 #line graph: Side lot sales by (select) neighborhood and year
-#next: grey out?
 #next: look at this compared to inventory
 lot_plot <- side_lot_sales %>%
   filter(`Neighborhood` %in% neighborhoods) %>%
@@ -107,7 +103,7 @@ lot_plot <- side_lot_sales %>%
   theme_light() +
   labs(title = 'Claytown Has the Largest Number of Side Lot Sales', subtitle ='Eight Most Active Regions in the Side Lot Sales Program since 2015', x='Year', y='Number of Side Lots Sold', caption='Data Source: Detroit Open Data Portal')
 
-ggsave(here('output','lot_sales.pdf'), lot_plot, dpi = 100, width = 8, height = 6, units = "in")
+ggsave(here('output','lot_sales.pdf'), lot_plot, dpi = 100, width = 8, height = 5, units = "in")
 
 
 #Land Inventory
@@ -135,15 +131,14 @@ sale_owned <- merge(for_sale_df, owned_df, by='District')
 
 
 district_owned_sale_plot <- sale_owned %>%
-  ggplot(aes(x=Owned, y=Sale, group=District)) +
-  geom_point(aes(size=Owned/Sale),color='orange') + 
+  ggplot(aes(x=Sale, y=Owned, group=District)) +
+  geom_point(aes(color = District, size=Owned/Sale)) + 
   scale_size(range=c(3,10), breaks = c(1,1.5,2,2.5,3)) + #to manage size of bubbles 
-  labs(title = 'District 5 (Downtown Detroit) Owns the Most Vacant Land in Proportion to Sidelots for Sale', subtitle ='Proportion of Owned Vacant Lots to Sidelots for Sale by District', x = 'Number of Owned Vacant Land', y= 'Number of Sidelots for Sale', caption='Data Source: Detroit Open Data Portal', size = 'Proportion of Owned Land \nto Lots For Sale') +
-  geom_text(aes(label=District), fontface = "bold", color = 'gray', vjust = 3, size=3) +
+  labs(title = 'District 5 (Downtown Detroit) Owns the Most Vacant Land in Proportion to Sidelots for Sale', subtitle ='Proportion of Owned Vacant Lots to Sidelots for Sale by District', y = 'Number of Owned Vacant Land', x= 'Number of Sidelots for Sale', caption='Data Source: Detroit Open Data Portal', size = 'Proportion of Owned Land \nto Lots For Sale') +
   theme_light()
 
 
-ggsave(here('output','sales_owned_district.pdf'), plot = district_owned_sale_plot, dpi = 100, width = 10, height = 6, units = "in")
+ggsave(here('output','sales_owned_district.pdf'), plot = district_owned_sale_plot, dpi = 100, width = 9, height = 5, units = "in")
 
 
 
