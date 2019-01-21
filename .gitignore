@@ -1,6 +1,9 @@
 #csv files
 *.csv
 
+#data folder
+detroit_data/
+
 # History files
 .Rhistory
 .Rapp.history
