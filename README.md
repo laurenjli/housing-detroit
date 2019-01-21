@@ -3,4 +3,8 @@ Data visualization of blight violations, demolitions, and side lot sales in Detr
 
 # Data
 
-The data was collected from Detroit's open data portal (https://data.detroitmi.gov/) on January 15, 2018. 
+The data was collected from Detroit's open data portal (https://data.detroitmi.gov/) on January 15, 2018.
+
+# Files
+
+explore.R: This file contains code to create the visualizations in the output folder. 
