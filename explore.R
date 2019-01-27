@@ -154,6 +154,25 @@ z<-blight_tix %>% group_by(blight_tix$`Violation Description`, blight_tix$`Payme
 summarize(z,count=n())
 
 
+test <- blight_tix %>%
+  #filter(!is.na(`Payment Status`)) %>%
+  mutate(`Violation Date` = as.Date(`Violation Date`,format = "%m/%d/%Y")) %>%
+  mutate(year = `Violation Date`) %>%
+  mutate(year = as.numeric(strftime(year, '%Y'))) %>%
+  filter(!is.na(`Judgment Amount (Total Due)`)) %>%
+  filter(`Judgment Amount (Total Due)` > 0) %>%
+  mutate(paid = ifelse(`Payment Status` == 'PAID IN FULL', 1, 0)) %>%
+  mutate(paid = ifelse(is.na(paid), 0, 1)) %>%
+  filter(year > 2004) %>%
+  filter(year < 2019) %>%
+  group_by(year,paid) %>%
+  summarize(count = n()) %>%
+  ggplot(aes(x=year, y=count, group=paid)) + geom_area(aes(fill=paid)) +
+  labs(title = 'Blight Tickets Are Often Left Unpaid', subtitle = 'Fully Paid and Partially Paid Blight Tickets since 2005', x='Year', y='Number of Tickets') + 
+  annotate('text', x=2007, y=4000, label = 'Paid in Full', color = 'white', fontface='bold') + 
+  annotate('text', x=2007.5, y=15000, label = 'Partially Paid or Unpaid',color = 'white', fontface='bold') +
+  theme_light()
+
 
 ##Side Lot Sales
 
@@ -170,7 +189,9 @@ side_lot_sales %>%
 past_demolitions %<>% 
   mutate(`Demolition Date` = as.Date(`Demolition Date`,format = "%m/%d/%Y")) %>%
   mutate(year = `Demolition Date`) %>%
-  mutate(year = strftime(year, '%Y'))
+  mutate(month = `Demolition Date`) %>%
+  mutate(year = strftime(year, '%Y')) %>%
+  mutate(month = strftime(month, '%m'))
 
 parcels <- past_demolitions$`Parcel ID`
 

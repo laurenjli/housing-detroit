@@ -1,0 +1,222 @@
+---
+title: "Exploratory Data Visualization of Blight and Demolitions in Detroit, Michigan"
+author: "Lauren Li"
+output: 
+  html_document:
+    code_folding: hide
+---
+
+```{r setup, include=FALSE, warning=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(here)
+library(ggrepel)
+library(magrittr)
+
+#read in csv
+blight_tix <- read_csv(here('detroit_data','Blight_Violations.csv'))
+side_lot_sales <- read_csv(here('detroit_data','Side_Lot_Sales.csv'))
+past_demolitions <- read_csv(here('detroit_data', 'Detroit_Demolitions.csv'))
+philly <- read_csv(here('detroit_data','li_demolitions.csv'))
+land_inv <- read_csv(here('detroit_data', 'Land_Bank_Inventory.csv'))
+```
+
+##Introduction
+
+
+Like many other metropolitan cities, Detroit suffers from derelict properties decaying from years of abandonment and disuse. Abandoned buildings often lower the values of surrounding properties and are linked to increased rates of crime. The city of Detroit has several ways of combatting blight and vacant buildings: monetary violations, demolitions, and sales of public-owned land to the public. 
+
+
+
+###Blight Violations
+
+
+Blight tickets are fines issued to property owners for infractions regarding their maintenance of their property’s exterior. The city of Detroit issues thousands of blight violations every month, with spikes in the summer and fall months. Blight violations peaked around the recession and started to decrease into 2012 and 2013. Since then, however, the number of violations has trended upward and are starting to reach recession-level highs.
+
+
+```{r}
+blight_tix %<>% mutate(`Violation Date` = as.Date(`Violation Date`,format = "%m/%d/%Y")) %>%
+  mutate(year = as.numeric(strftime(`Violation Date`, '%Y'))) %>%
+  mutate(month = as.numeric(strftime(`Violation Date`, '%m'))) %>%
+  mutate(month_year = `Violation Date`) %>%
+  mutate(month_year = as.Date(paste(strftime(month_year, '%Y-%m-'),'15',sep='')))
+
+
+
+#Number of blight violations reaching recession-levels (could become radial?)
+all_counts <- blight_tix %>%
+  filter(year > 2005) %>%
+  filter(year < 2019) %>%
+  group_by(month_year, year) %>%
+  summarize(count = n(),amount=sum(`Judgment Amount (Total Due)`), pertick = amount/count)
+
+counts_over_4500 <- all_counts %>% 
+  filter(count > 4500)
+
+counts_under_1000 <- all_counts %>% 
+  filter(count < 1000)
+
+all_counts %>%
+  ggplot(aes(x=month_year, y=count)) +
+  theme_classic() +
+  geom_line(size=1, color = 'light blue') +
+  geom_point(data = counts_over_4500, aes(x=month_year, y=count), color = 'orange', size =4, shape='diamond') +
+  annotate('text', x=as.Date('2010-07-15'), y=4800, label = 'Blight violations peaked \n during the recession', color = 'black', fontface='bold', size=3) +
+  annotate('text', x=as.Date('2015-07-15'), y=3900, label = 'After reaching lows in 2013 and 2014,\n blight violations have started\n to increase', color = 'black', fontface='bold', size=3) +
+  scale_x_date(breaks = seq(as.Date("2006-01-15"), as.Date("2018-12-15"), by="6 months"), date_labels = "%b %y") +
+  #scale_x_date(date_labels="%b %y",date_breaks  ="6 month") +
+  theme(axis.text.x = element_text(angle = 60, hjust = 1)) +
+  labs(title = 'Number of Blight Violations are Starting to Reach Recession-Level Highs', subtitle = 'Monthly Blight Violations in Detroit since 2006', x = 'Date', y='Number of Blight Violations', caption = 'Source: Detroit Open Data Portal')
+
+
+```
+
+
+###Blight Violation Noncompliance
+
+
+Detroit is struggling to enforce the maintenance of property standards on privately-owned land. Despite many ticket issuances, noncompliance with blight violations is very high. Since 2006, only about one third of tickets are paid in full. 
+
+
+
+```{r}
+#violations with an amount due and balance due > 0 but NA payment status -> bar chart
+blight_tix %>% 
+  filter(`Judgment Amount (Total Due)` > 0) %>% 
+  filter(`Balance Due` >= 0) %>%
+  filter(year > 2005) %>%
+  filter(year < 2019) %>%
+  mutate(paid = ifelse(`Payment Status` == 'PAID IN FULL', 'Yes', 'No')) %>%
+  mutate(paid = replace_na(paid, 'No')) %>%
+  mutate(paid = factor(paid, levels = c('Yes','No'))) %>%
+  group_by(year, paid) %>%
+  summarize(count=n()) %>%
+  ggplot(aes(x=year, y=count, fill=paid)) +
+  geom_bar(stat='identity', position='fill') +
+  theme_classic() +
+  scale_fill_manual(values = c('orange', 'light blue')) +
+  scale_x_continuous('Year', breaks =seq(2006,2018,1), labels = c('2006','2007','2008','2009','2010','2011','2012','2013','2014','2015','2016','2017','2018')) +
+  scale_y_continuous('Percentage of Tickets', breaks =seq(0,1,0.25), labels = c('0%','25%','50%','75%','100%')) +
+  labs(title='Noncompliance with Blight Tickets Is High', subtitle = 'Blight Violation Payment Status by Year', caption = 'Source: Detroit Open Data Portal\nNote: Tickets with NA Payment Status are included in the Not Paid in Full category', y = 'Number of Blight Tickets', fill = 'Ticket Paid in Full')
+
+```
+
+
+###Demolitions
+
+
+To maintain publically-owned blighted and abaoned land, Detroit has one of the largest demolitions programs in the country. The city spends tens of millions of dollars each year to demolish thousands of buildings across Detroit. Comparing Detroit's demolitions program to those of Philadelphia, Cleveland, and Baltimore, cities also plagued by blight and abandoned homes, gives a sense of the scale of Detroit's program. 
+
+
+```{r, warning=F}
+past_demolitions %<>% 
+  mutate(`Demolition Date` = as.Date(`Demolition Date`,format = "%m/%d/%Y")) %>%
+  mutate(month_year = `Demolition Date`) %>%
+  mutate(year = strftime(`Demolition Date`, '%Y')) %>%
+  mutate(month = strftime(`Demolition Date`, '%m')) %>%
+  mutate(month_year = as.Date(paste(strftime(month_year, '%Y-%m-'),'15',sep='')))
+
+
+d <- past_demolitions %>%
+  filter(year >= 2013) %>%
+  filter(year <= 2017)
+
+philly %<>% mutate(start_date = strftime(start_date,'%Y-%m-%d')) %>% mutate(year = as.numeric(strftime(start_date, '%Y')))
+
+
+p <- philly %>%
+  filter(!is.na(completed_date)) %>%
+  filter(year >= 2013) %>%
+  filter(year <= 2017)
+
+#cleveland: http://portal.cleveland-oh.gov/05.03.2018TenThousandDemos
+#baltimore: http://www.baltimorehousing.org/code_dem 
+
+comparison_per_year <- data.frame('city' = factor(c('Detroit', 'Philadelphia', 'Cleveland', 'Baltimore')), 'num' = c(round(nrow(d)/5),round(nrow(p)/5), 3450/5, 300))
+
+det <- comparison_per_year %>% filter(city == 'Detroit')
+
+comparison_per_year %>%
+  ggplot(aes(x=fct_rev(factor(city, levels = comparison_per_year$city)), y=num)) + 
+  geom_bar(stat = 'identity', fill = 'light blue') +
+  geom_text(aes(label = num), vjust=-1, size = 3) +
+  geom_bar(data = det, aes(x=city, y=num), stat='identity', fill = 'orange') +
+  labs(title = 'Detroit Demolishes Over 2500 Buildings a Year, \nOutpaces Other Major Cities', subtitle = 'Average Yearly Demolitions in Select Cities\n with Demolition Programs (2013-2017)', caption = 'Data Source: Detroit Open Data Portal, OpenDataPhilly, City of Cleveland Portal, Baltimore Housing Office', x='City', y='Average Demolitions per Year') +
+  scale_y_continuous(name = 'Average Demolitions per Year', breaks=seq(0,3000,1000), labels = c('0','1000','2000','3000'), limits = c(0,3000)) + theme_classic() +
+  theme(plot.title = element_text(hjust = 0.25, vjust=-18), plot.subtitle = element_text(hjust=0.25, vjust=-23), plot.margin=grid::unit(c(0,0,0,0), "mm"))
+
+```
+
+
+
+
+###Side Lot Sales
+
+After demolition, a number of lots are sold through a program that sells side lots in the Detroit Land Bank Authority's inventory for $100. The program is meant to encourage private and community investment in neighborhoods and reduce the number of properties in public ownership. Taking a look at side lot sales in each neighborhood since 2015, Claytown stands out with over a hundred lots sold each year. Airport Sub, Chadsey Condon, and Brightmoor also had a sizeable number of side lot sales compared to the rest of the neighborhoods.
+
+
+
+```{r, fig.width=9}
+side_lot_sales %<>% 
+  mutate(`Closing Date` = as.Date(`Closing Date`,format = "%m/%d/%Y")) %>%
+  mutate(year = `Closing Date`) %>%
+  mutate(year = as.numeric(strftime(year, '%Y')))
+
+
+neighborhoods <- c('Brightmoor','Claytown','Airport Sub','Chadsey Condon')
+
+top_5 <- side_lot_sales %>%
+  filter(`Neighborhood` %in% neighborhoods) %>%
+  group_by(`Neighborhood`, year) %>%
+  filter(year >= 2015) %>%
+  filter(year != 2019) %>%
+  summarize(count=n())
+
+#line graph: Side lot sales by (select) neighborhood and year
+#next: look at this compared to inventory
+lot_plot <- side_lot_sales %>%
+  group_by(`Neighborhood`, year) %>%
+  filter(year >= 2015) %>%
+  filter(year != 2019) %>%
+  summarize(count=n()) %>%
+  ggplot(aes(x=year, y=count, group=`Neighborhood`)) + 
+  geom_line(color='gray') +
+  geom_line(data=top_5, aes(x=year, y=count, color=`Neighborhood`), size=2) +
+  theme_classic() + theme(legend.position = c(0.92,0.8)) +
+  labs(title = 'Claytown Has the Largest Number of Side Lot Sales', subtitle ='Neighborhood Side Lot Sales Program since 2015', x='Year', y='Number of Side Lots Sold', caption='Data Source: Detroit Open Data Portal') 
+
+lot_plot
+```
+
+
+
+
+##Detroit Land Bank Inventory
+
+
+The side lot sales program is just one component of the Detroit Land Bank Authority. DLBA is a public agency and the city’s largest landowner with a number of vacant lots and abandoned houses. While the side lot sales program is fairly active, it is worth noting that a large portion of the DLBA's inventory is categorized as Owned Vacant Land as opposed to property that is for sale to private owners. There is a particularly high number of Owned Vacant Land properties compared to other inventory types in District 5, which is the downtown Detroit area. The buildup of city-owned land that is not for sale is often a frustrating barrier for those interested in buying property in the city.
+
+
+```{r}
+#Heatmap
+district_own <- land_inv %>%
+  mutate(District = paste('District', `Council District`)) %>%
+  mutate(`Inventory Status` = str_remove(`Inventory Status`, 'DLBA ')) %>%
+  group_by(District,`Inventory Status`) %>%
+  summarize(count=n()) 
+
+district_own <- data.frame(district_own)
+
+district_own %>%
+  ggplot(aes(x=District, y=fct_rev(factor(Inventory.Status, levels = c('Owned Vacant Land', 'Owned Structure','Owned Sidelot For Sale', 'Owned Structure For Sale'))), fill=count)) +
+  geom_tile() +
+  labs(title = "Detroit Land Bank Authority Isn't Selling Most of Its Vacant Land", subtitle = 'DLBA Inventory Status as of January 15, 2019', y = 'DLBA Inventory Status', x='Council District', caption = 'Data Source: Detroit Open Data Portal') +
+  scale_fill_gradient(name = "Number of Properties",
+                      low = "yellow",
+                      high = 'red') + 
+  theme_minimal() +
+  theme(panel.grid.minor = element_blank(),axis.text.x = element_text(angle = 60, hjust = 1))
+
+```
+
+
