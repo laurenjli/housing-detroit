@@ -24,7 +24,7 @@ land_inv <- read_csv(here('detroit_data', 'Land_Bank_Inventory.csv'))
 ##Introduction
 
 
-Like many other metropolitan cities, Detroit suffers from derelict properties decaying from years of abandonment and disuse. Abandoned buildings often lower the values of surrounding properties and are linked to increased rates of crime. The city of Detroit has several ways of combatting blight and vacant buildings: monetary violations, demolitions, and sales of public-owned land to the public. 
+Like many other metropolitan cities, Detroit suffers from derelict properties decaying from years of abandonment and disuse. Abandoned buildings often lower the values of surrounding properties and are linked to increased rates of crime. The city of Detroit has several methods of combatting blight and vacant buildings: monetary violations, demolitions, and sales of publically-owned land. 
 
 
 
