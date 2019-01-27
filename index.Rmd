@@ -31,7 +31,7 @@ Like many other metropolitan cities, Detroit suffers from derelict properties de
 ###Blight Violations
 
 
-Blight tickets are fines issued to property owners for infractions regarding their maintenance of their property’s exterior. The city of Detroit issues thousands of blight violations every month, with spikes in the summer and fall months. Blight violations peaked around the recession and started to decrease into 2012 and 2013. Since then, however, the number of violations has trended upward and are starting to reach recession-level highs.
+Blight tickets are fines issued to property owners for infractions regarding the maintenance of their property’s exterior. The city of Detroit issues thousands of blight violations every month, with spikes in the summer and fall months. Blight violations peaked around the recession and started to decrease into 2012 and 2013. Since then, however, the number of violations has trended upward and are starting to reach recession-level highs again.
 
 
 ```{r}
@@ -75,7 +75,7 @@ all_counts %>%
 ###Blight Violation Noncompliance
 
 
-Detroit is struggling to enforce the maintenance of property standards on privately-owned land. Despite many ticket issuances, noncompliance with blight violations is very high. Since 2006, only about one third of tickets are paid in full. 
+Detroit is struggling to enforce the maintenance of property standards on privately-owned land. Despite many ticket issuances, noncompliance with blight violations is very high. Since 2006, only about one third of tickets are paid in full each year. 
 
 
 
@@ -88,7 +88,7 @@ blight_tix %>%
   filter(year < 2019) %>%
   mutate(paid = ifelse(`Payment Status` == 'PAID IN FULL', 'Yes', 'No')) %>%
   mutate(paid = replace_na(paid, 'No')) %>%
-  mutate(paid = factor(paid, levels = c('Yes','No'))) %>%
+  mutate(paid = factor(paid, levels = c('No','Yes'))) %>%
   group_by(year, paid) %>%
   summarize(count=n()) %>%
   ggplot(aes(x=year, y=count, fill=paid)) +
@@ -97,7 +97,7 @@ blight_tix %>%
   scale_fill_manual(values = c('orange', 'light blue')) +
   scale_x_continuous('Year', breaks =seq(2006,2018,1), labels = c('2006','2007','2008','2009','2010','2011','2012','2013','2014','2015','2016','2017','2018')) +
   scale_y_continuous('Percentage of Tickets', breaks =seq(0,1,0.25), labels = c('0%','25%','50%','75%','100%')) +
-  labs(title='Noncompliance with Blight Tickets Is High', subtitle = 'Blight Violation Payment Status by Year', caption = 'Source: Detroit Open Data Portal\nNote: Tickets with NA Payment Status are included in the Not Paid in Full category', y = 'Number of Blight Tickets', fill = 'Ticket Paid in Full')
+  labs(title='Noncompliance of Blight Tickets Is High', subtitle = 'Blight Violation Payment Status by Year', caption = 'Source: Detroit Open Data Portal\nNote: Tickets with NA Payment Status are included in the Not Paid in Full category', y = 'Number of Blight Tickets', fill = 'Ticket Paid in Full')
 
 ```
 
@@ -105,7 +105,7 @@ blight_tix %>%
 ###Demolitions
 
 
-To maintain publically-owned blighted and abaoned land, Detroit has one of the largest demolitions programs in the country. The city spends tens of millions of dollars each year to demolish thousands of buildings across Detroit. Comparing Detroit's demolitions program to those of Philadelphia, Cleveland, and Baltimore, cities also plagued by blight and abandoned homes, gives a sense of the scale of Detroit's program. 
+To maintain publically-owned blighted and abandoned land, Detroit has one of the largest demolitions programs in the country. The city spends tens of millions of dollars each year to demolish thousands of buildings. Comparing Detroit's demolition program to those of Philadelphia, Cleveland, and Baltimore, cities also plagued by blight and abandoned homes, gives a sense of the scale of Detroit's program. 
 
 
 ```{r, warning=F}
@@ -163,14 +163,18 @@ side_lot_sales %<>%
   mutate(year = as.numeric(strftime(year, '%Y')))
 
 
-neighborhoods <- c('Brightmoor','Claytown','Airport Sub','Chadsey Condon')
+neighborhoods <- c('Brightmoor','Claytown','Airport Sub','Chadsey Condon','Penrose')
+
 
 top_5 <- side_lot_sales %>%
   filter(`Neighborhood` %in% neighborhoods) %>%
+  mutate(`Neighborhood` = ifelse(`Neighborhood` == 'Penrose', 'Other', `Neighborhood`)) %>%
   group_by(`Neighborhood`, year) %>%
   filter(year >= 2015) %>%
   filter(year != 2019) %>%
   summarize(count=n())
+
+cols <- c('Claytown' = 'purple', 'Airport Sub' = 'red', 'Brightmoor' = 'green', 'Chadsey Condon' = 'blue', 'Other' = 'gray')
 
 #line graph: Side lot sales by (select) neighborhood and year
 #next: look at this compared to inventory
@@ -182,8 +186,11 @@ lot_plot <- side_lot_sales %>%
   ggplot(aes(x=year, y=count, group=`Neighborhood`)) + 
   geom_line(color='gray') +
   geom_line(data=top_5, aes(x=year, y=count, color=`Neighborhood`), size=2) +
-  theme_classic() + theme(legend.position = c(0.92,0.8)) +
-  labs(title = 'Claytown Has the Largest Number of Side Lot Sales', subtitle ='Neighborhood Side Lot Sales Program since 2015', x='Year', y='Number of Side Lots Sold', caption='Data Source: Detroit Open Data Portal') 
+  scale_colour_manual(values=c('Claytown' = 'purple', 'Airport Sub' = 'red', 'Brightmoor' = 'light green', 'Chadsey Condon' = 'light blue', 'Other' = 'gray'), 
+                       name="Neighborhood", breaks=c("Claytown", "Airport Sub", "Brightmoor", 'Chadsey Condon', 'Other'),
+                       labels=c("Claytown", "Airport Sub", "Brightmoor", 'Chadsey Condon', 'Other')) +
+  theme_classic() + theme(legend.position = c(0.92,0.84)) +
+  labs(title = 'Claytown Has the Largest Number of Side Lot Sales', subtitle ='Side Lot Sales by Neighborhood since 2015', x='Year', y='Number of Side Lots Sold', caption='Data Source: Detroit Open Data Portal') 
 
 lot_plot
 ```
@@ -210,7 +217,7 @@ district_own <- data.frame(district_own)
 district_own %>%
   ggplot(aes(x=District, y=fct_rev(factor(Inventory.Status, levels = c('Owned Vacant Land', 'Owned Structure','Owned Sidelot For Sale', 'Owned Structure For Sale'))), fill=count)) +
   geom_tile() +
-  labs(title = "Detroit Land Bank Authority Isn't Selling Most of Its Vacant Land", subtitle = 'DLBA Inventory Status as of January 15, 2019', y = 'DLBA Inventory Status', x='Council District', caption = 'Data Source: Detroit Open Data Portal') +
+  labs(title = "A Large Portion of City-Owned Land Is Not For Sale", subtitle = 'Detroit Land Bank Authority Inventory Status as of January 15, 2019', y = 'DLBA Inventory Status', x='Council District', caption = 'Data Source: Detroit Open Data Portal') +
   scale_fill_gradient(name = "Number of Properties",
                       low = "yellow",
                       high = 'red') + 
