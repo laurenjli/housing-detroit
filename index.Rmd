@@ -228,8 +228,8 @@ district_own %>%
   ggplot(aes(x=District, y=fct_rev(factor(Inventory.Status, levels = c('Owned Vacant Land', 'Owned Structure','Owned Sidelot For Sale', 'Owned Structure For Sale'))), fill=count)) +
   geom_tile() +
   labs(title = "A Large Portion of City-Owned Land Is Not For Sale", subtitle = 'Detroit Land Bank Authority Inventory Status as of January 15, 2019', y = 'DLBA Inventory Status', x='Council District', caption = 'Data Source: Detroit Open Data Portal') +
-  scale_fill_gradient(name = "Number of Properties",
-                      low = "#ED9007",
+  scale_fill_gradient2(name = "Number of Properties",
+                      low = "#efedf5", mid = '#bcbddc',
                       high = '#31044F') + 
   theme_minimal() +
   theme(panel.grid.minor = element_blank(),axis.text.x = element_text(angle = 60, hjust = 1))
