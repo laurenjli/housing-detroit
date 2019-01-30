@@ -19,6 +19,9 @@ side_lot_sales <- read_csv(here('detroit_data','Side_Lot_Sales.csv'))
 past_demolitions <- read_csv(here('detroit_data', 'Detroit_Demolitions.csv'))
 philly <- read_csv(here('detroit_data','li_demolitions.csv'))
 land_inv <- read_csv(here('detroit_data', 'Land_Bank_Inventory.csv'))
+
+#color scheme
+discrete <- c('#D3D3D3', '#8F9BFF', '#31044F')
 ```
 
 ##Introduction
@@ -59,14 +62,14 @@ counts_under_1000 <- all_counts %>%
 all_counts %>%
   ggplot(aes(x=month_year, y=count)) +
   theme_classic() +
-  geom_line(size=1, color = 'light blue') +
-  geom_point(data = counts_over_4500, aes(x=month_year, y=count), color = 'orange', size =4, shape='diamond') +
-  annotate('text', x=as.Date('2010-07-15'), y=4800, label = 'Blight violations peaked \n during the recession', color = 'black', fontface='bold', size=3) +
+  geom_line(size=1, color = '#31044F') +
+  geom_point(data = counts_over_4500, aes(x=month_year, y=count), color = '#ED9007', size =4, shape='diamond') +
+  annotate('text', x=as.Date('2010-07-15'), y=4800, label = 'Blight violations peaked \n during the recession', color = '#31044F', fontface='bold', size=3) +
   annotate('text', x=as.Date('2015-07-15'), y=3900, label = 'After reaching lows in 2013 and 2014,\n blight violations have started\n to increase', color = 'black', fontface='bold', size=3) +
   scale_x_date(breaks = seq(as.Date("2006-01-15"), as.Date("2018-12-15"), by="6 months"), date_labels = "%b %y") +
   #scale_x_date(date_labels="%b %y",date_breaks  ="6 month") +
   theme(axis.text.x = element_text(angle = 60, hjust = 1)) +
-  labs(title = 'Number of Blight Violations are Starting to Reach Recession-Level Highs', subtitle = 'Monthly Blight Violations in Detroit since 2006', x = 'Date', y='Number of Blight Violations', caption = 'Source: Detroit Open Data Portal')
+  labs(title = 'Number of Blight Violations are Starting to Reach Recession-Level Highs', subtitle = 'Monthly Blight Violations in Detroit since 2006', x = 'Date', y='Number of Blight Violations', caption = 'Source: Detroit Open Data Portal') 
 
 
 ```
@@ -94,10 +97,10 @@ blight_tix %>%
   ggplot(aes(x=year, y=count, fill=paid)) +
   geom_bar(stat='identity', position='fill') +
   theme_classic() +
-  scale_fill_manual(values = c('orange', 'light blue')) +
+  scale_fill_manual(values = c('#ED9007', '#31044F')) +
   scale_x_continuous('Year', breaks =seq(2006,2018,1), labels = c('2006','2007','2008','2009','2010','2011','2012','2013','2014','2015','2016','2017','2018')) +
   scale_y_continuous('Percentage of Tickets', breaks =seq(0,1,0.25), labels = c('0%','25%','50%','75%','100%')) +
-  labs(title='Noncompliance of Blight Tickets Is High', subtitle = 'Blight Violation Payment Status by Year', caption = 'Source: Detroit Open Data Portal\nNote: Tickets with NA Payment Status are included in the Not Paid in Full category', y = 'Number of Blight Tickets', fill = 'Ticket Paid in Full')
+  labs(title='Noncompliance of Blight Tickets Is High', subtitle = 'Blight Violation Payment Status by Year', caption = 'Source: Detroit Open Data Portal\nNote: Tickets with NA Payment Status are included in the Not Paid in Full category', y = 'Number of Blight Tickets', fill = 'Ticket Paid in Full') 
 
 ```
 
@@ -138,7 +141,7 @@ det <- comparison_per_year %>% filter(city == 'Detroit')
 
 comparison_per_year %>%
   ggplot(aes(x=fct_rev(factor(city, levels = comparison_per_year$city)), y=num)) + 
-  geom_bar(stat = 'identity', fill = 'light blue') +
+  geom_bar(stat = 'identity', fill = '#31044F') +
   geom_text(aes(label = num), vjust=-1, size = 3) +
   geom_bar(data = det, aes(x=city, y=num), stat='identity', fill = 'orange') +
   labs(title = 'Detroit Demolishes Over 2500 Buildings a Year, \nOutpaces Other Major Cities', subtitle = 'Average Yearly Demolitions in Select Cities\n with Demolition Programs (2013-2017)', caption = 'Data Source: Detroit Open Data Portal, OpenDataPhilly, City of Cleveland Portal, Baltimore Housing Office', x='City', y='Average Demolitions per Year') +
@@ -174,7 +177,14 @@ top_5 <- side_lot_sales %>%
   filter(year != 2019) %>%
   summarize(count=n())
 
-cols <- c('Claytown' = 'purple', 'Airport Sub' = 'red', 'Brightmoor' = 'green', 'Chadsey Condon' = 'blue', 'Other' = 'gray')
+num <- length(unique(side_lot_sales$Neighborhood))
+
+avg <- side_lot_sales %>%
+  filter(year >= 2015) %>%
+  filter(year != 2019) %>%
+  group_by(year) %>%
+  summarize(count = n(), a = count/num)
+  
 
 #line graph: Side lot sales by (select) neighborhood and year
 #next: look at this compared to inventory
@@ -184,9 +194,9 @@ lot_plot <- side_lot_sales %>%
   filter(year != 2019) %>%
   summarize(count=n()) %>%
   ggplot(aes(x=year, y=count, group=`Neighborhood`)) + 
-  geom_line(color='gray') +
+  geom_line(color='#D3D3D3') +
   geom_line(data=top_5, aes(x=year, y=count, color=`Neighborhood`), size=2) +
-  scale_colour_manual(values=c('Claytown' = 'purple', 'Airport Sub' = 'red', 'Brightmoor' = 'light green', 'Chadsey Condon' = 'light blue', 'Other' = 'gray'), 
+  scale_colour_manual(values=c('Claytown' = '#ED9007', 'Airport Sub' = '#8C82FA', 'Brightmoor' = '#6408A1', 'Chadsey Condon' = '#31044F', 'Other' = '#D3D3D3'), 
                        name="Neighborhood", breaks=c("Claytown", "Airport Sub", "Brightmoor", 'Chadsey Condon', 'Other'),
                        labels=c("Claytown", "Airport Sub", "Brightmoor", 'Chadsey Condon', 'Other')) +
   theme_classic() + theme(legend.position = c(0.92,0.84)) +
@@ -219,8 +229,8 @@ district_own %>%
   geom_tile() +
   labs(title = "A Large Portion of City-Owned Land Is Not For Sale", subtitle = 'Detroit Land Bank Authority Inventory Status as of January 15, 2019', y = 'DLBA Inventory Status', x='Council District', caption = 'Data Source: Detroit Open Data Portal') +
   scale_fill_gradient(name = "Number of Properties",
-                      low = "yellow",
-                      high = 'red') + 
+                      low = "#ED9007",
+                      high = '#31044F') + 
   theme_minimal() +
   theme(panel.grid.minor = element_blank(),axis.text.x = element_text(angle = 60, hjust = 1))
 
