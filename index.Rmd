@@ -98,13 +98,6 @@ all_counts %>%
   labs(title = 'Number of Blight Violations are Starting to Reach Recession-Level Highs', subtitle = 'Monthly Blight Violations in Detroit since 2006', x = 'Date', y='Number of Blight Violations', caption = 'Source: Detroit Open Data Portal') 
 
 
-
-#all_counts %>% 
-  #ggplot(aes(x=month_year, y=count, fill=year)) +
-  #geom_bar(stat='identity') +
-  #ylim(-1000,6000) +
-  #coord_polar(start=0) +my_theme
-
 ```
 
 
@@ -140,7 +133,7 @@ blight_tix %>%
 
 
 
-###Select Comparison of Other Demolition Programs
+###Demolition Program
 
 
 To maintain publically-owned blighted and abandoned land, Detroit has one of the largest demolitions programs in the country. The city spends tens of millions of dollars each year to demolish thousands of buildings. Comparing Detroit's demolition program to those of Philadelphia, Cleveland, and Baltimore, cities also plagued by blight and abandoned homes, gives a sense of the scale of Detroit's program. 
@@ -152,7 +145,8 @@ past_demolitions %<>%
   mutate(month_year = `Demolition Date`) %>%
   mutate(year = as.numeric(strftime(`Demolition Date`, '%Y'))) %>%
   mutate(month = as.numeric(strftime(`Demolition Date`, '%m'))) %>%
-  mutate(month_year = as.Date(paste(strftime(month_year, '%Y-%m-'),'15',sep='')))
+  mutate(month_year = as.Date(paste(strftime(month_year, '%Y-%m-'),'15',sep=''))) %>%
+  mutate(Council_District = paste('District', Council_District))
 
 d <- past_demolitions %>%
   filter(year >= 2013) %>%
@@ -188,7 +182,7 @@ comparison_per_year %>%
 
 ##Funding
 
- is the Hardest Hit Funding program and is the largest on the city’s funding sources, when this tag is used it means HHF is the likely primary source. In some instances, a house will switch to non-HHF or have city funds used to cover additional costs over the program limit of $25,000. which, by law, can be spent only in federally-designated areas of the city.
+The Hardest Hit Funding program and is the largest of the city’s funding sources for its demolition program, which, by law, can be spent only in federally-designated areas of the city. The funds are split across the city to carry out demolitions. In 2018, council districts 4 and 7 (east and west Detroit respectively) had the highest number of demolitions funded by HHf. In some instances, a house will switch to non-HHF or have city funds used to cover additional costs over the program limit of $25,000. 
 
 
 ```{r, fig.align = 'center'}
@@ -208,74 +202,17 @@ circle_data <- cbind(circle_data, packing)
 dat.gg <- circleLayoutVertices(packing, npoints=50)
 
 ggplot() +
-  geom_polygon(data = dat.gg, aes(x, y, group = id, fill=id)) +
-  geom_text(data = circle_data, aes(x, y, size=count, label = Council_District)) +
+  geom_polygon(data = dat.gg, aes(x, y, group = id, fill= factor(id, levels = c(2,5,6,3,1,4,7)))) +
+  geom_text(data = circle_data, aes(x, y, size=count, label = Council_District), color = 'white', size=3.5) +
+  coord_fixed(ratio=0.7) +
   my_theme +
   scale_size_continuous(range = c(1,4)) +
-  theme_void() + 
-  theme(legend.position="none") +
-  coord_equal()
+  theme(legend.position="none", axis.line = element_line(color='white'), 
+        axis.text = element_text(color='white'), axis.ticks = element_line(color='white'), plot.title = element_text(hjust=0.5),
+        plot.subtitle=element_text(hjust=0.5), plot.caption = element_text(hjust=2)) +
+  labs(title = 'Districts 4 and 7 Had The Highest Number \nof Hardest Hit Funding Demolitions in 2018', subtitle = 'HHF Demolitions in Detroit by Council District', caption = 'Data source: Detroit Open Data Portal',x='',y='') +
+  scale_fill_manual(values = c('#31044F', '#31044F', '#31044F','#31044F','#31044F', '#ED9007', '#ED9007'))
 
-
-```
-
-
-###Own It Now, Auctions, Side Lot Sales
-
-
-```{r, fig.align = 'center'}
-auctions %<>% 
-  mutate(`Closing Date` = as.Date(`Closing Date`,format = "%m/%d/%Y")) %>%
-  mutate(year = `Closing Date`) %>%
-  mutate(year = as.numeric(strftime(year, '%Y'))) %>%
-  mutate(month= `Closing Date`) %>%
-  mutate(month = as.numeric(strftime(month, '%m'))) %>%
-  mutate(category = 'Auctions')
-
-own_it_now %<>%
-  mutate(`Closing Date` = as.Date(`Closing Date`,format = "%m/%d/%Y")) %>%
-  mutate(year = `Closing Date`) %>%
-  mutate(year = as.numeric(strftime(year, '%Y'))) %>%
-  mutate(month= `Closing Date`) %>%
-  mutate(month = as.numeric(strftime(month, '%m'))) %>%
-  mutate(category = '"Own It Now" Sale')
-
-side_lot_sales %<>% 
-  mutate(`Closing Date` = as.Date(`Closing Date`,format = "%m/%d/%Y")) %>%
-  mutate(year = `Closing Date`) %>%
-  mutate(year = as.numeric(strftime(year, '%Y'))) %>%
-  mutate(month= `Closing Date`) %>%
-  mutate(month = as.numeric(strftime(month, '%m'))) %>%
-  mutate(category = 'Side Lot Sale')
-
-
-a <- auctions %>%
-  filter(year > 2013 & year < 2019) %>%
-  group_by(category, year) %>%
-  summarize(count = n())
-
-b <- own_it_now %>%
-  filter(year > 2013 & year < 2019) %>%
-  group_by(category, year) %>%
-  summarize(count = n())
-
-c <- side_lot_sales %>%
-  filter(year > 2013 & year < 2019) %>%
-  group_by(category,year) %>%
-  summarize(count = n())
-
-all_three <- rbind(a,b)
-all_three <- rbind(all_three,c)
-#all_three %<>% mutate(pct_change = (count/lag(count)-1) * 100)
-  
-
-ggplot(all_three, aes(x=year, y=count)) + 
-  geom_bar(stat='identity', fill = '#31044F') + geom_line(color='#ED9007', size=2) +
-  facet_grid(cols = vars(factor(category, levels = c('Auctions', '"Own It Now" Sale', 'Side Lot Sale')))) + 
-  my_theme + 
-  theme(strip.text = element_text(face='bold', color = '#ED9007', size=10), strip.background = element_rect(color='white')) +
-  scale_y_continuous(labels=comma) +
-  labs(title = 'Auctions and "Own It Now" Sales Are Increasing but Fall Behind Side Lot Sales', subtitle = 'Properties Sold through Detroit Land Bank Authority Programs Each Year', caption = 'Data Source: Detroit Open Data Portal', x='Year', y='Number of Properties Sold')
 
 ```
 
@@ -288,6 +225,14 @@ After demolition, a number of lots are sold through a program that sells side lo
 
 
 ```{r, fig.width=9, fig.align='center'}
+side_lot_sales %<>% 
+  mutate(`Closing Date` = as.Date(`Closing Date`,format = "%m/%d/%Y")) %>%
+  mutate(year = `Closing Date`) %>%
+  mutate(year = as.numeric(strftime(year, '%Y'))) %>%
+  mutate(month= `Closing Date`) %>%
+  mutate(month = as.numeric(strftime(month, '%m'))) %>%
+  mutate(category = 'Side Lot Sale')
+
 neighborhoods <- c('Brightmoor','Claytown','Airport Sub','Chadsey Condon','Penrose')
 
 
@@ -328,11 +273,65 @@ side_lot_sales %>%
 
 
 
+##Programs to Sell City-Owned Land
+
+
+The side lot sales program is just one component of the Detroit Land Bank Authority. DLBA is a public agency and the city’s largest landowner with a number of vacant lots and abandoned houses. The side lot sales program is by far the most active by number of properties sold; however, the DLBA has increased its efforts to sell structures through Auctions and its "Own It Now" Program over the past couple of years.
+
+
+```{r, fig.align = 'center'}
+auctions %<>% 
+  mutate(`Closing Date` = as.Date(`Closing Date`,format = "%m/%d/%Y")) %>%
+  mutate(year = `Closing Date`) %>%
+  mutate(year = as.numeric(strftime(year, '%Y'))) %>%
+  mutate(month= `Closing Date`) %>%
+  mutate(month = as.numeric(strftime(month, '%m'))) %>%
+  mutate(category = 'Auctions')
+
+own_it_now %<>%
+  mutate(`Closing Date` = as.Date(`Closing Date`,format = "%m/%d/%Y")) %>%
+  mutate(year = `Closing Date`) %>%
+  mutate(year = as.numeric(strftime(year, '%Y'))) %>%
+  mutate(month= `Closing Date`) %>%
+  mutate(month = as.numeric(strftime(month, '%m'))) %>%
+  mutate(category = '"Own It Now" Sale')
+
+a <- auctions %>%
+  filter(year > 2013 & year < 2019) %>%
+  group_by(category, year) %>%
+  summarize(count = n())
+
+b <- own_it_now %>%
+  filter(year > 2013 & year < 2019) %>%
+  group_by(category, year) %>%
+  summarize(count = n())
+
+c <- side_lot_sales %>%
+  filter(year > 2013 & year < 2019) %>%
+  group_by(category,year) %>%
+  summarize(count = n())
+
+all_three <- rbind(a,b)
+all_three <- rbind(all_three,c)
+#all_three %<>% mutate(pct_change = (count/lag(count)-1) * 100)
+  
+
+ggplot(all_three, aes(x=year, y=count)) + 
+  geom_bar(stat='identity', fill = '#31044F') + geom_line(color='#ED9007', size=2) +
+  facet_grid(cols = vars(factor(category, levels = c('Auctions', '"Own It Now" Sale', 'Side Lot Sale')))) + 
+  my_theme + 
+  theme(strip.text = element_text(face='bold', color = '#ED9007', size=10), strip.background = element_rect(color='white')) +
+  scale_y_continuous(labels=comma) +
+  labs(title = 'Auctions and "Own It Now" Sales Are Increasing,\nFall Behind Side Lot Sales', subtitle = 'Properties Sold through Detroit Land Bank Authority Programs Each Year', caption = 'Data Source: Detroit Open Data Portal', x='Year', y='Number of Properties Sold')
+
+```
+
+
+
 
 ##Detroit Land Bank Inventory
 
-
-The side lot sales program is just one component of the Detroit Land Bank Authority. DLBA is a public agency and the city’s largest landowner with a number of vacant lots and abandoned houses. While the side lot sales program is fairly active, it is worth noting that a large portion of the DLBA's inventory is categorized as Owned Vacant Land as opposed to property that is for sale to private owners. There is a particularly high number of Owned Vacant Land properties compared to other inventory types in District 5, which is the downtown Detroit area. The buildup of city-owned land that is not for sale is often a frustrating barrier for those interested in buying property in the city.
+Despite increased sales through Auctions and the "Own It Now" program, buildup of city-owned land that is not for sale is often a frustrating barrier for those interested in buying property in the city. It is worth noting that a large portion of the Detroit Land Bank Authority's inventory is categorized as Owned Vacant Land as opposed to property that is for sale to private owners. There is a particularly high number of Owned Vacant Land properties compared to other inventory types in District 5, which is the downtown Detroit area.
 
 
 ```{r, fig.width=9, fig.height=6, fig.align='center'}
