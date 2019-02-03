@@ -12,13 +12,18 @@ library(tidyverse)
 library(here)
 library(ggrepel)
 library(magrittr)
+library(scales)
 
 #read in csv
 blight_tix <- read_csv(here('detroit_data','Blight_Violations.csv'))
 side_lot_sales <- read_csv(here('detroit_data','Side_Lot_Sales.csv'))
+own_it_now <- read_csv(here('detroit_data','Own_It_Now_Sales.csv'))
+auctions <- read_csv(here('detroit_data','DLBA_Auctions_Closed.csv'))
 past_demolitions <- read_csv(here('detroit_data', 'Detroit_Demolitions.csv'))
 philly <- read_csv(here('detroit_data','li_demolitions.csv'))
 land_inv <- read_csv(here('detroit_data', 'Land_Bank_Inventory.csv'))
+#contracted <- read_csv(here('detroit_data', 'Upcoming_Demolitions.csv'))
+#planned <- read_csv(here('detroit_data', 'Demolition_Pipeline.csv'))
 
 #color scheme
 #gray, light purple, darker purple, dark purple
@@ -57,7 +62,7 @@ Like many other metropolitan cities, Detroit suffers from derelict properties de
 Blight tickets are fines issued to property owners for infractions regarding the maintenance of their property’s exterior. The city of Detroit issues thousands of blight violations every month, with spikes in the summer and fall months. Blight violations peaked around the recession and started to decrease into 2012 and 2013. Since then, however, the number of violations has trended upward and are starting to reach recession-level highs again.
 
 
-```{r, fig.width = 9}
+```{r, fig.width = 9, fig.align='center'}
 blight_tix %<>% mutate(`Violation Date` = as.Date(`Violation Date`,format = "%m/%d/%Y")) %>%
   mutate(year = as.numeric(strftime(`Violation Date`, '%Y'))) %>%
   mutate(month = as.numeric(strftime(`Violation Date`, '%m'))) %>%
@@ -84,13 +89,21 @@ all_counts %>%
   my_theme +
   geom_line(size=1, color = '#31044F') +
   geom_point(data = counts_over_4500, aes(x=month_year, y=count), color = '#ED9007', size =4, shape='diamond') +
-  annotate('text', x=as.Date('2010-07-15'), y=4800, label = 'Blight violations peaked \n during the recession', fontface='bold', size=3, family = my_theme$text[['family']]) +
-  annotate('text', x=as.Date('2015-07-15'), y=3900, label = 'After reaching lows in 2013 and 2014,\n blight violations have started\n to increase', fontface='bold', size=3, family = my_theme$text[['family']]) +
+  annotate('text', x=as.Date('2010-07-15'), y=4800, label = 'Blight violations peaked \n during the recession', fontface='bold', size=3, family = my_theme$text[['family']], color = '#ED9007') +
+  annotate('text', x=as.Date('2015-07-15'), y=3900, label = 'After reaching lows in 2013 and 2014,\n blight violations have started\n to increase', fontface='bold', size=3, family = my_theme$text[['family']], color = '#ED9007') +
   scale_x_date(breaks = seq(as.Date("2006-01-15"), as.Date("2018-12-15"), by="6 months"), date_labels = "%b %y") +
   #scale_x_date(date_labels="%b %y",date_breaks  ="6 month") +
   theme(axis.text.x = element_text(angle = 60, hjust = 1)) +
+  scale_y_continuous(labels=comma) +
   labs(title = 'Number of Blight Violations are Starting to Reach Recession-Level Highs', subtitle = 'Monthly Blight Violations in Detroit since 2006', x = 'Date', y='Number of Blight Violations', caption = 'Source: Detroit Open Data Portal') 
 
+
+
+#all_counts %>% 
+  #ggplot(aes(x=month_year, y=count, fill=year)) +
+  #geom_bar(stat='identity') +
+  #ylim(-1000,6000) +
+  #coord_polar(start=0) +my_theme
 
 ```
 
@@ -102,7 +115,7 @@ Detroit is struggling to enforce the maintenance of property standards on privat
 
 
 
-```{r}
+```{r, fig.align='center'}
 #violations with an amount due and balance due > 0 but NA payment status -> bar chart
 blight_tix %>% 
   filter(`Judgment Amount (Total Due)` > 0) %>% 
@@ -125,20 +138,21 @@ blight_tix %>%
 ```
 
 
-###Demolitions
+
+
+###Select Comparison of Other Demolition Programs
 
 
 To maintain publically-owned blighted and abandoned land, Detroit has one of the largest demolitions programs in the country. The city spends tens of millions of dollars each year to demolish thousands of buildings. Comparing Detroit's demolition program to those of Philadelphia, Cleveland, and Baltimore, cities also plagued by blight and abandoned homes, gives a sense of the scale of Detroit's program. 
 
 
-```{r, warning=F}
+```{r, warning=F, fig.align='center'}
 past_demolitions %<>% 
   mutate(`Demolition Date` = as.Date(`Demolition Date`,format = "%m/%d/%Y")) %>%
   mutate(month_year = `Demolition Date`) %>%
-  mutate(year = strftime(`Demolition Date`, '%Y')) %>%
-  mutate(month = strftime(`Demolition Date`, '%m')) %>%
+  mutate(year = as.numeric(strftime(`Demolition Date`, '%Y'))) %>%
+  mutate(month = as.numeric(strftime(`Demolition Date`, '%m'))) %>%
   mutate(month_year = as.Date(paste(strftime(month_year, '%Y-%m-'),'15',sep='')))
-
 
 d <- past_demolitions %>%
   filter(year >= 2013) %>%
@@ -172,6 +186,99 @@ comparison_per_year %>%
 ```
 
 
+##Funding
+
+ is the Hardest Hit Funding program and is the largest on the city’s funding sources, when this tag is used it means HHF is the likely primary source. In some instances, a house will switch to non-HHF or have city funds used to cover additional costs over the program limit of $25,000. which, by law, can be spent only in federally-designated areas of the city.
+
+
+```{r, fig.align = 'center'}
+library(packcircles)
+#circle packing with HHF funded demolitions (2018) - Districts 4 and 7 had most HHF funded demolitions in 2018
+
+circle_data <- as.data.frame(past_demolitions %>%
+  filter(year==2018) %>%
+  filter(`Primary Funding Source` == 'HHF') %>%
+  group_by(Council_District) %>%
+  summarize(count = n()))
+
+
+packing <- circleProgressiveLayout(circle_data$count, sizetype='area')
+circle_data <- cbind(circle_data, packing)
+
+dat.gg <- circleLayoutVertices(packing, npoints=50)
+
+ggplot() +
+  geom_polygon(data = dat.gg, aes(x, y, group = id, fill=id)) +
+  geom_text(data = circle_data, aes(x, y, size=count, label = Council_District)) +
+  my_theme +
+  scale_size_continuous(range = c(1,4)) +
+  theme_void() + 
+  theme(legend.position="none") +
+  coord_equal()
+
+
+```
+
+
+###Own It Now, Auctions, Side Lot Sales
+
+
+```{r, fig.align = 'center'}
+auctions %<>% 
+  mutate(`Closing Date` = as.Date(`Closing Date`,format = "%m/%d/%Y")) %>%
+  mutate(year = `Closing Date`) %>%
+  mutate(year = as.numeric(strftime(year, '%Y'))) %>%
+  mutate(month= `Closing Date`) %>%
+  mutate(month = as.numeric(strftime(month, '%m'))) %>%
+  mutate(category = 'Auctions')
+
+own_it_now %<>%
+  mutate(`Closing Date` = as.Date(`Closing Date`,format = "%m/%d/%Y")) %>%
+  mutate(year = `Closing Date`) %>%
+  mutate(year = as.numeric(strftime(year, '%Y'))) %>%
+  mutate(month= `Closing Date`) %>%
+  mutate(month = as.numeric(strftime(month, '%m'))) %>%
+  mutate(category = '"Own It Now" Sale')
+
+side_lot_sales %<>% 
+  mutate(`Closing Date` = as.Date(`Closing Date`,format = "%m/%d/%Y")) %>%
+  mutate(year = `Closing Date`) %>%
+  mutate(year = as.numeric(strftime(year, '%Y'))) %>%
+  mutate(month= `Closing Date`) %>%
+  mutate(month = as.numeric(strftime(month, '%m'))) %>%
+  mutate(category = 'Side Lot Sale')
+
+
+a <- auctions %>%
+  filter(year > 2013 & year < 2019) %>%
+  group_by(category, year) %>%
+  summarize(count = n())
+
+b <- own_it_now %>%
+  filter(year > 2013 & year < 2019) %>%
+  group_by(category, year) %>%
+  summarize(count = n())
+
+c <- side_lot_sales %>%
+  filter(year > 2013 & year < 2019) %>%
+  group_by(category,year) %>%
+  summarize(count = n())
+
+all_three <- rbind(a,b)
+all_three <- rbind(all_three,c)
+#all_three %<>% mutate(pct_change = (count/lag(count)-1) * 100)
+  
+
+ggplot(all_three, aes(x=year, y=count)) + 
+  geom_bar(stat='identity', fill = '#31044F') + geom_line(color='#ED9007', size=2) +
+  facet_grid(cols = vars(factor(category, levels = c('Auctions', '"Own It Now" Sale', 'Side Lot Sale')))) + 
+  my_theme + 
+  theme(strip.text = element_text(face='bold', color = '#ED9007', size=10), strip.background = element_rect(color='white')) +
+  scale_y_continuous(labels=comma) +
+  labs(title = 'Auctions and "Own It Now" Sales Are Increasing but Fall Behind Side Lot Sales', subtitle = 'Properties Sold through Detroit Land Bank Authority Programs Each Year', caption = 'Data Source: Detroit Open Data Portal', x='Year', y='Number of Properties Sold')
+
+```
+
 
 
 ###Side Lot Sales
@@ -180,13 +287,7 @@ After demolition, a number of lots are sold through a program that sells side lo
 
 
 
-```{r, fig.width=9}
-side_lot_sales %<>% 
-  mutate(`Closing Date` = as.Date(`Closing Date`,format = "%m/%d/%Y")) %>%
-  mutate(year = `Closing Date`) %>%
-  mutate(year = as.numeric(strftime(year, '%Y')))
-
-
+```{r, fig.width=9, fig.align='center'}
 neighborhoods <- c('Brightmoor','Claytown','Airport Sub','Chadsey Condon','Penrose')
 
 
@@ -209,7 +310,7 @@ avg <- side_lot_sales %>%
 
 #line graph: Side lot sales by (select) neighborhood and year
 #next: look at this compared to inventory
-lot_plot <- side_lot_sales %>%
+side_lot_sales %>%
   group_by(`Neighborhood`, year) %>%
   filter(year >= 2015) %>%
   filter(year != 2019) %>%
@@ -220,10 +321,9 @@ lot_plot <- side_lot_sales %>%
   scale_colour_manual(values=c('Claytown' = '#ED9007', 'Airport Sub' = '#8C82FA', 'Brightmoor' = '#6408A1', 'Chadsey Condon' = '#31044F', 'Other' = '#D3D3D3'), 
                        name="Neighborhood", breaks=c("Claytown", "Airport Sub", "Brightmoor", 'Chadsey Condon', 'Other'),
                        labels=c("Claytown", "Airport Sub", "Brightmoor", 'Chadsey Condon', 'Other')) +
-  my_theme + theme(legend.position = c(0.92,0.84)) +
+  my_theme + theme(legend.position = c(0.92,0.9)) + scale_x_continuous(expand=c(0,0), lim = c(2015,2018.02)) +
   labs(title = 'Claytown Has the Largest Number of Side Lot Sales', subtitle ='Side Lot Sales by Neighborhood since 2015', x='Year', y='Number of Side Lots Sold', caption='Data Source: Detroit Open Data Portal') 
 
-lot_plot
 ```
 
 
@@ -235,25 +335,26 @@ lot_plot
 The side lot sales program is just one component of the Detroit Land Bank Authority. DLBA is a public agency and the city’s largest landowner with a number of vacant lots and abandoned houses. While the side lot sales program is fairly active, it is worth noting that a large portion of the DLBA's inventory is categorized as Owned Vacant Land as opposed to property that is for sale to private owners. There is a particularly high number of Owned Vacant Land properties compared to other inventory types in District 5, which is the downtown Detroit area. The buildup of city-owned land that is not for sale is often a frustrating barrier for those interested in buying property in the city.
 
 
-```{r}
+```{r, fig.width=9, fig.height=6, fig.align='center'}
 #Heatmap
 district_own <- land_inv %>%
   mutate(District = paste('District', `Council District`)) %>%
-  mutate(`Inventory Status` = str_remove(`Inventory Status`, 'DLBA ')) %>%
+  mutate(`Inventory Status` = str_remove(`Inventory Status`, 'DLBA Owned ')) %>%
   group_by(District,`Inventory Status`) %>%
   summarize(count=n()) 
 
 district_own <- data.frame(district_own)
 
 district_own %>%
-  ggplot(aes(x=District, y=fct_rev(factor(Inventory.Status, levels = c('Owned Vacant Land', 'Owned Structure','Owned Sidelot For Sale', 'Owned Structure For Sale'))), fill=count)) +
+  ggplot(aes(x=District, y=fct_rev(factor(Inventory.Status, levels = c('Vacant Land', 'Structure','Sidelot For Sale', 'Structure For Sale'))), fill=count)) +
   geom_tile() +
-  labs(title = "A Large Portion of City-Owned Land Is Not For Sale", subtitle = 'Detroit Land Bank Authority Inventory Status as of January 15, 2019', y = 'DLBA Inventory Status', x='Council District', caption = 'Data Source: Detroit Open Data Portal') +
-  #scale_fill_gradient2(name = "Number of Properties",
-                      #low = "#efedf5", mid = '#bcbddc',
-                      #high = '#31044F') + 
-  scale_fill_gradient(name ='test', low = '#31044F', high = '#ED9007') + my_theme +
-  theme(axis.text.x = element_text(angle = 60, hjust = 1)) 
+  labs(title = "A Large Portion of City-Owned Land Is Not For Sale", subtitle = 'Detroit Land Bank Authority Inventory Status as of January 15, 2019', y = 'Inventory Status', x='Council District', caption = 'Data Source: Detroit Open Data Portal') +
+  scale_fill_gradient(name ='Number of Properties', low = '#31044F', high = '#ED9007') + 
+  coord_fixed(ratio = 1) +
+  my_theme +
+  geom_text(aes(label = count), color = '#D3D3D3', size=3, family = my_theme$text[['family']], fontface='bold') +
+  theme(axis.text.x = element_text(angle = 60, hjust = 1, vjust=1))
 ```
+
 
 

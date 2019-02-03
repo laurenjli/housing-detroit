@@ -247,4 +247,90 @@ owned_neighborhood <- land_inv %>%
   arrange(desc(count)) %>% 
   filter(count > 400)
   
+#circular bar plot of demolitions over time? (monthly)
 
+past_demolitions %<>% 
+  mutate(`Demolition Date` = as.Date(`Demolition Date`,format = "%m/%d/%Y")) %>%
+  mutate(month_year = `Demolition Date`) %>%
+  mutate(year = strftime(`Demolition Date`, '%Y')) %>%
+  filter(year!='2019') %>%
+  mutate(month = as.numeric(strftime(`Demolition Date`, '%m'))) %>%
+  mutate(month_year = as.Date(paste(strftime(month_year, '%Y-%m-'),'15',sep=''))) %>%
+  #mutate(half_year = ifelse(month < 7, paste('1H',year), paste('2H', year))) %>%
+  #mutate(half_year = as.factor(half_year)) %>%
+  #mutate(half_year = factor(half_year,levels = c('1H 2014', '2H 2014', '1H 2015', '2H 2015', '1H 2016', '2H 2016', '1H 2017', '2H 2017', '1H 2018', '2H 2018')))
+  
+  
+  past_demolitions %>%
+  group_by(Council_District, year) %>%
+  summarize(count=n(), avg = mean(Price)) %>%
+  ggplot(aes(x=Council_District, y=avg, group=year, fill=Council_District, labels=Council_District)) + 
+  geom_bar(stat='identity', position = 'dodge') + ylim(-24000, 30000) + coord_polar(start=0) + my_theme
+
+
+test <- past_demolitions %>%
+  group_by(half_year) %>%
+  summarize(count=n(), avg=mean(Price)) %>%
+  ggplot() +
+  geom_bar(aes(x=half_year, y=log(avg)), stat='identity') +
+  geom_bar(aes(x=half_year, y=log(count)), stat='identity', color='red')
+
+
+#stacked area graph of main contractors over time -> by avg price or count? (not much there)
+
+past_demolitions %>%
+  group_by(year, `Contractor Name`) %>%
+  summarize(count = n(), avg=mean(Price)) %>%
+  ggplot(aes(x=year, y=avg, group=`Contractor Name`)) +
+  geom_area()
+
+
+#exploratory: auctions/own it now/ side lots
+all_three %>%
+  ggplot(aes(x=year, y=count, group=category)) +
+  geom_area(aes(fill=category))
+
+
+
+geom_bar(stat='identity', position= 'dodge') +
+  ylim(-1000000,6000000) +
+  coord_polar(start=0) +
+  my_theme
+
+ggplot(all_three, aes(x=year, y=total)) + geom_line()+ facet_grid(cols = vars(category)) + my_theme
+
+
+ggplot(data = all_three, aes(x=count, y = total, group=category, fill=category, size=total/count)) + geom_point() + geom_line()
+
+
+library(ggridges)
+
+new_a <- auctions %>%
+  group_by(category, `Final Sale Price`) %>%
+  summarize()
+
+new_b <- own_it_now %>%
+  group_by(category, `Final Sale Price`) %>%
+  summarize()
+
+new_c <- side_lot_sales %>%
+  group_by(category, `Final Sale Price`) %>%
+  summarize()
+
+all <- rbind(new_a, new_b)
+all <- rbind(all, new_c)
+
+all %>%
+  filter(`Final Sale Price` > 0) %>%
+  ggplot(aes(x = `Final Sale Price`, y = factor(category, levels = c('Side Lot Sale', 'Own It Now Sale', 'Auctions')), fill = category)) +
+  geom_density_ridges() +
+  my_theme + scale_y_discrete(expand=(c(0,0))) + xlim(-5000,50000) +
+  #theme_ridges() + 
+  theme(legend.position = "none") 
+
+own_it_now %>%
+  ggplot(aes(x = `Final Sale Price`, y = factor(`Council District`), fill = `Council District`)) +
+  geom_density_ridges() +
+  theme_ridges() + 
+  theme(legend.position = "none") +
+  xlim(0,20000)
