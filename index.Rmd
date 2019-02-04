@@ -210,7 +210,7 @@ ggplot() +
   theme(legend.position="none", axis.line = element_line(color='white'), 
         axis.text = element_text(color='white'), axis.ticks = element_line(color='white'), plot.title = element_text(hjust=0.5),
         plot.subtitle=element_text(hjust=0.5), plot.caption = element_text(hjust=1.5)) +
-  labs(title = 'Districts 4 and 7 Had The Highest Number \nof Hardest Hit Funding Demolitions in 2018', subtitle = 'HHF Demolitions in Detroit by Council District', caption = 'Data source: Detroit Open Data Portal',x='',y='') +
+  labs(title = 'Districts 4 and 7 Had The Highest Number \nof Hardest Hit Funding Demolitions in 2018', subtitle = 'HHF Demolitions in Detroit by Council District', caption = 'Data Source: Detroit Open Data Portal',x='',y='') +
   scale_fill_manual(values = c('#31044F', '#31044F', '#31044F','#31044F','#31044F', '#ED9007', '#ED9007'))
 
 
@@ -320,7 +320,7 @@ ggplot(all_three, aes(x=year, y=count)) +
   geom_bar(stat='identity', fill = '#31044F') + geom_line(color='#ED9007', size=2) +
   facet_grid(cols = vars(factor(category, levels = c('Auctions', '"Own It Now" Sale', 'Side Lot Sale')))) + 
   my_theme + 
-  theme(strip.text = element_text(face='bold', color = '#ED9007', size=10), strip.background = element_rect(color='white')) +
+  theme(strip.text = element_text(face='bold', color = '#ED9007', size=10), strip.background = element_rect(fill='white',color='white')) +
   scale_y_continuous(labels=comma) +
   labs(title = 'Auctions and "Own It Now" Sales Are Increasing\nbut Side Lot Sales Are More Common', subtitle = 'Properties Sold through Detroit Land Bank Authority Programs Each Year', caption = 'Data Source: Detroit Open Data Portal', x='Year', y='Number of Properties Sold')
 
