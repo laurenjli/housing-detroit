@@ -59,7 +59,7 @@ Like many other metropolitan cities, Detroit suffers from derelict properties de
 ###Blight Violations
 
 
-Blight tickets are fines issued to property owners for infractions regarding the maintenance of their property’s exterior. The city of Detroit issues thousands of blight violations every month, with spikes in the summer and fall months. Blight violations peaked around the recession and started to decrease into 2012 and 2013. Since then, however, the number of violations has trended upward and are starting to reach recession-level highs again.
+Blight tickets are fines issued to property owners for infractions regarding the maintenance of their property’s exterior. The city of Detroit issues thousands of blight violations every month, with spikes in the summer and fall months. Blight violations peaked around the recession and started to decrease into 2012 and 2013. Since then, however, the number of violations has trended upward and is starting to reach recession-level highs again.
 
 
 ```{r, fig.width = 9, fig.align='center'}
@@ -170,7 +170,7 @@ det <- comparison_per_year %>% filter(city == 'Detroit')
 comparison_per_year %>%
   ggplot(aes(x=fct_rev(factor(city, levels = comparison_per_year$city)), y=num)) + 
   geom_bar(stat = 'identity', fill = '#31044F') +
-  geom_text(aes(label = num), vjust=-1, size = 3) +
+  geom_text(aes(label = num), vjust=-1, size = 3, family = my_theme$text[['family']]) +
   geom_bar(data = det, aes(x=city, y=num), stat='identity', fill = 'orange') +
   labs(title = 'Detroit Demolishes Over 2500 Buildings a Year, \nOutpaces Other Major Cities', subtitle = 'Average Yearly Demolitions in Select Cities\n with Demolition Programs (2013-2017)', caption = 'Data Source: Detroit Open Data Portal, OpenDataPhilly, City of Cleveland Portal, Baltimore Housing Office', x='City', y='Average Demolitions per Year') +
   scale_y_continuous(name = 'Average Demolitions per Year', breaks=seq(0,3000,1000), labels = c('0','1000','2000','3000'), limits = c(0,3000)) + theme_classic() +
@@ -203,7 +203,7 @@ dat.gg <- circleLayoutVertices(packing, npoints=50)
 
 ggplot() +
   geom_polygon(data = dat.gg, aes(x, y, group = id, fill= factor(id, levels = c(2,5,6,3,1,4,7)))) +
-  geom_text(data = circle_data, aes(x, y, size=count, label = Council_District), color = 'white', size=3.5) +
+  geom_text(data = circle_data, aes(x, y, size=count, label = Council_District), color = 'white', size=3.5, family = my_theme$text[['family']]) +
   coord_fixed(ratio=0.7) +
   my_theme +
   scale_size_continuous(range = c(1,4)) +
@@ -331,7 +331,7 @@ ggplot(all_three, aes(x=year, y=count)) +
 
 ##Detroit Land Bank Inventory
 
-Despite increased sales through Auctions and the "Own It Now" program, buildup of city-owned land that is not for sale is often a frustrating barrier for those interested in buying property in the city. It is worth noting that a large portion of the Detroit Land Bank Authority's inventory is categorized as Owned Vacant Land as opposed to property that is for sale to private owners. There is a particularly high number of Owned Vacant Land properties compared to other inventory types in District 5, which is the downtown Detroit area.
+Despite increased sales through Auctions and the "Own It Now" program, buildup of city-owned land that is not for sale is often a frustrating barrier for those interested in buying property in the city. It is worth noting that a large portion of the Detroit Land Bank Authority's inventory is categorized as Vacant Land as opposed to property that is for sale to private owners. There is a particularly high number of Vacant Land properties compared to other inventory types in District 5, which is the downtown Detroit area.
 
 
 ```{r, fig.width=9, fig.height=6, fig.align='center'}
