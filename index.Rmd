@@ -32,7 +32,7 @@ primary <- c('#D3D3D3', '#8C82FA', '#6408A1','#31044F')
 secondary <- c('#ED9007','#14E5D0', '#B0EE31')
 
 #theme
-my_theme <- theme_classic() + theme(text = element_text(family="Helvetica", color = 'black'), 
+my_theme <- theme(text = element_text(family="Helvetica", color = 'black'), 
                   plot.title = element_text(size = 14, face = 'bold'),
                   plot.subtitle = element_text(size = 12),
                   plot.caption = element_text(size = 8),
@@ -180,9 +180,9 @@ comparison_per_year %>%
 ```
 
 
-##Funding
+##Demolition Funding
 
-The Hardest Hit Funding program and is the largest of the city’s funding sources for its demolition program, which, by law, can be spent only in federally-designated areas of the city. The funds are split across the city to carry out demolitions. In 2018, council districts 4 and 7 (east and west Detroit respectively) had the highest number of demolitions funded by HHf. In some instances, a house will switch to non-HHF or have city funds used to cover additional costs over the program limit of $25,000. 
+The Hardest Hit Funding program is the largest of the city’s funding sources for its demolition program, which, by law, can be spent only in federally-designated areas of the city. The funds are split across the city to carry out demolitions. In 2018, council districts 4 and 7 (east and west Detroit respectively) had the highest number of demolitions funded by HHF. The program has a limit of $25,000 per building so there are some instances in which a house will switch to non-HHF or have city funds used to cover additional costs over the program limit.
 
 
 ```{r, fig.align = 'center'}
@@ -209,7 +209,7 @@ ggplot() +
   scale_size_continuous(range = c(1,4)) +
   theme(legend.position="none", axis.line = element_line(color='white'), 
         axis.text = element_text(color='white'), axis.ticks = element_line(color='white'), plot.title = element_text(hjust=0.5),
-        plot.subtitle=element_text(hjust=0.5), plot.caption = element_text(hjust=2)) +
+        plot.subtitle=element_text(hjust=0.5), plot.caption = element_text(hjust=1.5)) +
   labs(title = 'Districts 4 and 7 Had The Highest Number \nof Hardest Hit Funding Demolitions in 2018', subtitle = 'HHF Demolitions in Detroit by Council District', caption = 'Data source: Detroit Open Data Portal',x='',y='') +
   scale_fill_manual(values = c('#31044F', '#31044F', '#31044F','#31044F','#31044F', '#ED9007', '#ED9007'))
 
@@ -322,7 +322,7 @@ ggplot(all_three, aes(x=year, y=count)) +
   my_theme + 
   theme(strip.text = element_text(face='bold', color = '#ED9007', size=10), strip.background = element_rect(color='white')) +
   scale_y_continuous(labels=comma) +
-  labs(title = 'Auctions and "Own It Now" Sales Are Increasing,\nFall Behind Side Lot Sales', subtitle = 'Properties Sold through Detroit Land Bank Authority Programs Each Year', caption = 'Data Source: Detroit Open Data Portal', x='Year', y='Number of Properties Sold')
+  labs(title = 'Auctions and "Own It Now" Sales Are Increasing\nbut Side Lot Sales Are More Common', subtitle = 'Properties Sold through Detroit Land Bank Authority Programs Each Year', caption = 'Data Source: Detroit Open Data Portal', x='Year', y='Number of Properties Sold')
 
 ```
 
