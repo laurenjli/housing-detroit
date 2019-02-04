@@ -56,7 +56,7 @@ Like many other metropolitan cities, Detroit suffers from derelict properties de
 
 
 
-###Blight Violations
+##Blight Violations
 
 
 Blight tickets are fines issued to property owners for infractions regarding the maintenance of their property’s exterior. The city of Detroit issues thousands of blight violations every month, with spikes in the summer and fall months. Blight violations peaked around the recession and started to decrease into 2012 and 2013. Since then, however, the number of violations has trended upward and is starting to reach recession-level highs again.
@@ -101,7 +101,7 @@ all_counts %>%
 ```
 
 
-###Blight Violation Noncompliance
+##Blight Violation Noncompliance
 
 
 Detroit is struggling to enforce the maintenance of property standards on privately-owned land. Despite many ticket issuances, noncompliance with blight violations is very high. Since 2006, only about one third of tickets are paid in full each year. 
@@ -133,7 +133,7 @@ blight_tix %>%
 
 
 
-###Demolition Program
+##Demolition Program
 
 
 To maintain publically-owned blighted and abandoned land, Detroit has one of the largest demolitions programs in the country. The city spends tens of millions of dollars each year to demolish thousands of buildings. Comparing Detroit's demolition program to those of Philadelphia, Cleveland, and Baltimore, cities also plagued by blight and abandoned homes, gives a sense of the scale of Detroit's program. 
@@ -218,7 +218,7 @@ ggplot() +
 
 
 
-###Side Lot Sales
+##Side Lot Sales
 
 After demolition, a number of lots are sold through a program that sells side lots in the Detroit Land Bank Authority's inventory for $100. The program is meant to encourage private and community investment in neighborhoods and reduce the number of properties in public ownership. Taking a look at side lot sales in each neighborhood since 2015, Claytown stands out with over a hundred lots sold each year. Airport Sub, Chadsey Condon, and Brightmoor also had a sizeable number of side lot sales compared to the rest of the neighborhoods.
 
@@ -266,14 +266,14 @@ side_lot_sales %>%
   scale_colour_manual(values=c('Claytown' = '#ED9007', 'Airport Sub' = '#8C82FA', 'Brightmoor' = '#6408A1', 'Chadsey Condon' = '#31044F', 'Other' = '#D3D3D3'), 
                        name="Neighborhood", breaks=c("Claytown", "Airport Sub", "Brightmoor", 'Chadsey Condon', 'Other'),
                        labels=c("Claytown", "Airport Sub", "Brightmoor", 'Chadsey Condon', 'Other')) +
-  my_theme + theme(legend.position = c(0.92,0.9),legend.key=element_blank()) + scale_x_continuous(expand=c(0,0), lim = c(2015,2018.02)) +
+  my_theme + theme(legend.position = c(0.92,0.9),legend.key=element_blank()) + scale_x_continuous(expand=c(0,0), lim = c(2015,2018.02)) + scale_y_continuous(expand=c(0,0))
   labs(title = 'Claytown Has the Largest Number of Side Lot Sales', subtitle ='Side Lot Sales by Neighborhood since 2015', x='Year', y='Number of Side Lots Sold', caption='Data Source: Detroit Open Data Portal') 
 
 ```
 
 
 
-##Programs to Sell City-Owned Land
+##Other Programs to Sell City-Owned Land
 
 
 The side lot sales program is just one component of the Detroit Land Bank Authority. DLBA is a public agency and the city’s largest landowner with a number of vacant lots and abandoned houses. The side lot sales program is by far the most active by number of properties sold; however, the DLBA has increased its efforts to sell structures through Auctions and its "Own It Now" Program over the past couple of years.
