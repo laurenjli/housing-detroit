@@ -210,7 +210,7 @@ ggplot() +
   theme(legend.position="none", axis.line = element_line(color='white'), 
         axis.text = element_text(color='white'), axis.ticks = element_line(color='white'), plot.title = element_text(hjust=0.5),
         plot.subtitle=element_text(hjust=0.5), plot.caption = element_text(hjust=1.5)) +
-  labs(title = 'Districts 4 and 7 Had The Highest Number \nof Hardest Hit Funding Demolitions in 2018', subtitle = 'HHF Demolitions in Detroit by Council District', caption = 'Data Source: Detroit Open Data Portal',x='',y='') +
+  labs(title = 'Districts 4 and 7 Had The Most Demolitions Funded \nby the Hardest Hit Funding Program in 2018', subtitle = 'HHF Demolitions in Detroit by Council District', caption = 'Data Source: Detroit Open Data Portal',x='',y='') +
   scale_fill_manual(values = c('#31044F', '#31044F', '#31044F','#31044F','#31044F', '#ED9007', '#ED9007'))
 
 
@@ -266,7 +266,7 @@ side_lot_sales %>%
   scale_colour_manual(values=c('Claytown' = '#ED9007', 'Airport Sub' = '#8C82FA', 'Brightmoor' = '#6408A1', 'Chadsey Condon' = '#31044F', 'Other' = '#D3D3D3'), 
                        name="Neighborhood", breaks=c("Claytown", "Airport Sub", "Brightmoor", 'Chadsey Condon', 'Other'),
                        labels=c("Claytown", "Airport Sub", "Brightmoor", 'Chadsey Condon', 'Other')) +
-  my_theme + theme(legend.position = c(0.92,0.9)) + scale_x_continuous(expand=c(0,0), lim = c(2015,2018.02)) +
+  my_theme + theme(legend.position = c(0.92,0.9),legend.key=element_blank()) + scale_x_continuous(expand=c(0,0), lim = c(2015,2018.02)) +
   labs(title = 'Claytown Has the Largest Number of Side Lot Sales', subtitle ='Side Lot Sales by Neighborhood since 2015', x='Year', y='Number of Side Lots Sold', caption='Data Source: Detroit Open Data Portal') 
 
 ```
