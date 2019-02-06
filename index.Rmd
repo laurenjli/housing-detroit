@@ -13,6 +13,7 @@ library(here)
 library(ggrepel)
 library(magrittr)
 library(scales)
+library(sf)
 
 #read in csv
 blight_tix <- read_csv(here('detroit_data','Blight_Violations.csv'))
@@ -57,6 +58,8 @@ my_theme <- theme(text = element_text(family="Helvetica", color = 'black'),
                   axis.ticks.length = unit(.15, "cm"),
                   legend.box.margin = margin(6, 6, 6, 6),
                   legend.text = element_text(size = 10, colour = "black"))
+
+map_theme <- my_theme + theme(panel.grid.major = element_line(colour = "white"))
 
 ```
 
@@ -362,4 +365,63 @@ district_own %>%
 ```
 
 
+
+```{r}
+#test shape file - Detroit Council Districts
+
+#blight violations district?
+
+f <- 'geo_export_c0cba125-2fb0-432f-9a11-e6bb3c7dd89e.shp'
+
+districts_shp <- st_read(here('detroit_data','City Council Districts',f))
+
+max_long <- range(st_coordinates(districts_shp))[1]
+max_lat <- range(st_coordinates(districts_shp))[2]
+
+blight_2018 <- blight_tix %>% 
+  mutate(year = as.Date(`Violation Date`,format = "%m/%d/%Y")) %>%
+  mutate(year = as.numeric(strftime(year, '%Y'))) %>%
+  filter(year==2018) %>%
+  filter(`Violation Latitude` < max_lat) %>%
+  filter(`Violation Longitude` > max_long)
+
+x<-blight_2018 %>% filter(`Violation Latitude` < 42.3) %>% filter(`Violation Longitude` < -83.2)
+y <- blight_2018 %>% filter((`Violation Longitude` < -83.25) & (`Violation Latitude` < 42.33))
+
+dots <- data.frame('long' = c(-83.27886,-83.28137,-83.167531573, -83.17150, -83.14558), 'lat' = c(42.35133, 42.36877,42.2512935180001,42.25646,42.30114)) #other points outside of district plot area
+
+ggplot(data = districts_shp) +
+  geom_sf(aes(fill = districts)) +
+  geom_point(data = blight_2018, aes(x = `Violation Longitude`, y = `Violation Latitude`), size = 0.25, 
+        alpha=0.5, fill = "darkred") +
+  geom_point(data =x, aes(x = `Violation Longitude`, y = `Violation Latitude`), size = 1, color = "white") +
+  geom_point(data =y, aes(x = `Violation Longitude`, y = `Violation Latitude`), size = 1, color = "white") +
+  geom_point(data = dots, aes(x = long, y = lat), size = 1, color = "white") +
+  
+  coord_sf(xlim = c(-83.3, -82.9), ylim = c(42.25, 42.47), expand = FALSE) +
+  my_theme
+
+#plot(st_geometry(districts_shp))
+#ask alex about this, and "spatial joins"
+
+
+```
+
+
+
+
+```{r}
+#test shape file - Detroit Neighborhoods
+
+#plot demolitions by neighborhood?
+
+f <- 'geo_export_30086289-81b8-46bd-bbf7-9d8d3ae67dce.shp'
+
+neighbor_shp <- st_read(here('detroit_data','Detroit Neighborhoods',f))
+
+
+ggplot(data = neighbor_shp) +
+  geom_sf(aes(fill = 'green'))
+
+```
 
