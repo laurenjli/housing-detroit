@@ -367,15 +367,12 @@ district_own %>%
 
 
 
-```{r}
-#test shape file - Detroit Council Districts
-
-#blight violations district? -> see high concentration of blight in East and West Detroit, coincides with large number of demolitiosn in those areas
+```{r, fig.align = 'center', results='hide', fig.keep='all', warning = F}
+#Blight Violations by District
 
 f <- 'geo_export_c0cba125-2fb0-432f-9a11-e6bb3c7dd89e.shp'
-#b <- 'geo_export_8edb7010-386f-4605-9edf-dd1633730b76.shp'
+
 districts_shp <- st_read(here('detroit_data','City Council Districts',f))
-#detroit_boundary <- st_read(here('detroit_data','City of Detroit Boundary',b))
 
 max_long <- range(st_coordinates(districts_shp))[1]
 max_lat <- range(st_coordinates(districts_shp))[2]
@@ -387,18 +384,15 @@ blight_2018 <- blight_tix %>%
   filter(`Violation Latitude` < max_lat) %>%
   filter(`Violation Longitude` > max_long)
 
-x<-blight_2018 %>% filter(`Violation Latitude` < 42.3) %>% filter(`Violation Longitude` < -83.2)
-y <- blight_2018 %>% filter((`Violation Longitude` < -83.25) & (`Violation Latitude` < 42.33))
+blight_points <- data.frame('Long' = blight_2018$`Violation Longitude`, 'Lat' = blight_2018$`Violation Latitude`)
+tmp <- st_as_sf(blight_points, coords = c('Long','Lat'), crs=st_crs(districts_shp)[[1]])
+tmp <- st_transform(tmp, crs = st_crs(districts_shp)[[2]])
+tmp <- st_intersection(districts_shp, tmp)
+dots <- data.frame(st_coordinates(tmp))
 
-dots <- data.frame('long' = c(-83.27886,-83.28137,-83.167531573, -83.17150, -83.14558, -82.92131), 'lat' = c(42.35133, 42.36877,42.2512935180001,42.25646,42.30114, 42.39332)) #other points outside of district plot area
-
-ggplot(data = districts_shp) +
-  geom_sf(fill = '#31044F', color = 'white') + 
-  geom_point(data = blight_2018, aes(x = `Violation Longitude`, y = `Violation Latitude`), size = 0.25, color = '#ED9007', fill = "#ED9007") +
-  geom_point(data =x, aes(x = `Violation Longitude`, y = `Violation Latitude`), size = 1, color = "white") +
-  geom_point(data =y, aes(x = `Violation Longitude`, y = `Violation Latitude`), size = 1, color = "white") +
-  geom_point(data = dots, aes(x = long, y = lat), size = 1, color = "white") +
-  #geom_sf_label(aes(label = districts), size=2) +
+ggplot() +
+  geom_sf(data = districts_shp, fill = '#31044F', color = 'white') + 
+  geom_point(data = dots, aes(x=X, y=Y), size = 0.25, color = '#ED9007', fill = "#ED9007") +
   annotate('text', x = -83.325, y = 42.42, label = 'District 1', color = 'black', size =3, family = my_theme$text[['family']], fontface='bold') +
   annotate("segment", x = -83.3, xend = -83.287, y = 42.42, yend = 42.42, color = 'black') +
   annotate('text', x = -83.17, y = 42.458, label = 'District 2', color = 'black', angle = 2, size = 3, family = my_theme$text[['family']], fontface='bold') +
@@ -414,8 +408,7 @@ ggplot(data = districts_shp) +
   annotate('text', x = -82.9, y = 42.38, label = 'District 4', color = 'black', size = 3, family = my_theme$text[['family']], fontface='bold') +
   annotate("segment", x = -82.94, xend = -82.925, y = 42.38, yend = 42.38, color = 'black') +
   coord_sf(xlim = c(-83.4, -82.85), ylim = c(42.25, 42.47), expand = FALSE) +
-  #coord_sf(xlim = c(-86, -82.9), ylim = c(42.25, 45), expand = FALSE) +
-  #map_theme +
+  map_theme +
   labs(title = 'High Concentration of Blight in Western and Eastern Detroit', subtitle = '2018 Blight Ticket Violations in Detroit', caption = 'Data Source: Detroit Data Portal') +
   annotate('text', x = -83, y = 42.27, label = '*Each orange dot represents a blight violation', size=2.5)
 
@@ -423,7 +416,7 @@ ggplot(data = districts_shp) +
 
 
 
-```{r}
+```{r, fig.align = 'center', results='hide', fig.keep='all', warning = F}
 #test shape file - Detroit Neighborhoods
 
 #plot demolitions by neighborhood?

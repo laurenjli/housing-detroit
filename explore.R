@@ -334,3 +334,21 @@ own_it_now %>%
   theme_ridges() + 
   theme(legend.position = "none") +
   xlim(0,20000)
+
+
+
+#blight map remove outside dots
+
+#x<-blight_2018 %>% filter(`Violation Latitude` < 42.3) %>% filter(`Violation Longitude` < -83.2)
+#y <- blight_2018 %>% filter((`Violation Longitude` < -83.25) & (`Violation Latitude` < 42.33))
+
+#dots <- data.frame('long' = c(-83.27886,-83.28137,-83.167531573, -83.17150, -83.14558, -82.92131), 'lat' = c(42.35133, 42.36877,42.2512935180001,42.25646,42.30114, 42.39332)) #other points outside of district plot area
+
+
+#+ geom_point(data = dots, aes(x=X, y=Y), size = 0.25, color = '#ED9007', fill = "#ED9007")
+#geom_point(data = blight_2018, aes(x = `Violation Longitude`, y = `Violation Latitude`), size = 0.25, color = '#ED9007', fill = "#ED9007") +
+#geom_point(data =x, aes(x = `Violation Longitude`, y = `Violation Latitude`), size = 1, color = "white") +
+#geom_point(data =y, aes(x = `Violation Longitude`, y = `Violation Latitude`), size = 1, color = "white") +
+#geom_point(data = dots, aes(x = long, y = lat), size = 1, color = "white") +
+#geom_sf_label(aes(label = districts), size=2) 
+
