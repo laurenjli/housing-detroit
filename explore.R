@@ -352,3 +352,31 @@ own_it_now %>%
 #geom_point(data = dots, aes(x = long, y = lat), size = 1, color = "white") +
 #geom_sf_label(aes(label = districts), size=2) 
 
+
+
+#symbol map of demolitions vs property sold?
+
+c <- st_centroid(x)
+
+ggplot() +
+  geom_sf(data=districts_shp) +
+  geom_sf(data=c, aes(size=dem, color=total))
+
+
+
+f <- here('detroit_data','ACS_17_5YR_S2506','ACS_17_5YR_S2506_with_ann.csv')
+
+homes <- read_csv(f)
+
+homes %<>% select(GEO.id2, HC01_EST_VC10) %>% mutate(zipcode = GEO.id2) %>% mutate(HC01_EST_VC10 = as.numeric(HC01_EST_VC10))
+
+f <- here('detroit_data','City of Detroit Zip Code Boundaries','geo_export_9a7468a0-7334-43b5-9b02-408c4a8a9026.shp')
+
+zips <- st_read(f)
+
+
+det_zips <- left_join(zips, homes, by = 'zipcode')
+
+ggplot() +
+  geom_sf(data=zips) +
+  geom_sf(data=det_zips, aes(fill = HC01_EST_VC10)) + scale_fill_gradient(name ='Number of Properties', low = '#31044F', high = '#ED9007')

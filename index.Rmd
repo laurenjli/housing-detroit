@@ -111,6 +111,59 @@ all_counts %>%
 ```
 
 
+##Blight Concentration
+
+
+
+```{r, fig.align = 'center', results='hide', fig.keep='all', warning = F, message = F, fig.width = 9}
+#Blight Violations by District
+
+f <- 'geo_export_c0cba125-2fb0-432f-9a11-e6bb3c7dd89e.shp'
+
+districts_shp <- st_read(here('detroit_data','City Council Districts',f))
+
+max_long <- range(st_coordinates(districts_shp))[1]
+max_lat <- range(st_coordinates(districts_shp))[2]
+
+blight_2018 <- blight_tix %>% 
+  mutate(year = as.Date(`Violation Date`,format = "%m/%d/%Y")) %>%
+  mutate(year = as.numeric(strftime(year, '%Y'))) %>%
+  filter(year==2018) %>%
+  filter(`Violation Latitude` < max_lat) %>%
+  filter(`Violation Longitude` > max_long)
+
+blight_points <- data.frame('Long' = blight_2018$`Violation Longitude`, 'Lat' = blight_2018$`Violation Latitude`)
+tmp <- st_as_sf(blight_points, coords = c('Long','Lat'), crs=st_crs(districts_shp)[[1]])
+tmp <- st_transform(tmp, crs = st_crs(districts_shp)[[2]])
+tmp <- st_intersection(districts_shp, tmp)
+dots <- data.frame(st_coordinates(tmp))
+
+ggplot() +
+  geom_sf(data = districts_shp, fill = '#31044F', color = 'white') + 
+  geom_point(data = dots, aes(x=X, y=Y), size = 0.25, color = '#ED9007', fill = "#ED9007") +
+  annotate('text', x = -83.325, y = 42.42, label = 'District 1', color = 'black', size =3, family = my_theme$text[['family']], fontface='bold') +
+  annotate("segment", x = -83.3, xend = -83.287, y = 42.42, yend = 42.42, color = 'black') +
+  annotate('text', x = -83.17, y = 42.458, label = 'District 2', color = 'black', angle = 2, size = 3, family = my_theme$text[['family']], fontface='bold') +
+  annotate("segment", x = -83.18, xend = -83.19, y = 42.45, yend = 42.444, color = 'black') +
+  annotate('text', x = -83.05, y = 42.458, label = 'District 3', color = 'black', angle = 2, size = 3, family = my_theme$text[['family']], fontface='bold') +
+  annotate("segment", x = -83.05, xend = -83.06, y = 42.451, yend = 42.445, color = 'black') +
+  annotate('text', x = -83.305, y = 42.36, label = 'District 7', color = 'black', size = 3, family = my_theme$text[['family']], fontface='bold') +
+  annotate("segment", x = -83.28, xend = -83.265, y = 42.36, yend = 42.36, color = 'black') +
+  annotate('text', x = -83.05, y = 42.3, label = 'District 6', color = 'black', size = 3, family = my_theme$text[['family']], fontface='bold') +
+  annotate("segment", x = -83.095, xend = -83.073, y = 42.3, yend = 42.3, color = 'black') +
+  annotate('text', x = -83, y = 42.325, label = 'District 5', color = 'black', size = 3, family = my_theme$text[['family']], fontface='bold') +
+  annotate("segment", x = -83.02, xend = -83.01, y = 42.335, yend = 42.33, color = 'black') +
+  annotate('text', x = -82.9, y = 42.38, label = 'District 4', color = 'black', size = 3, family = my_theme$text[['family']], fontface='bold') +
+  annotate("segment", x = -82.94, xend = -82.925, y = 42.38, yend = 42.38, color = 'black') +
+  coord_sf(xlim = c(-83.4, -82.85), ylim = c(42.25, 42.47), expand = FALSE) +
+  map_theme +
+  labs(title = 'High Concentration of Blight in Western and Eastern Detroit', subtitle = '2018 Blight Ticket Violations in Detroit', caption = 'Data Source: Detroit Data Portal') +
+  annotate('point', x = -83.075, y = 42.27, color = '#ED9007', fill = "#ED9007") +
+  annotate('text', x = -83, y = 42.27, label = 'Represents one blight violation', size=3)
+
+```
+
+
 ##Blight Violation Noncompliance
 
 
@@ -339,6 +392,70 @@ ggplot(all_three, aes(x=year, y=count)) +
 
 
 
+##Auctions/Own It Now Sales by Neighborhood
+
+
+
+```{r, fig.align = 'center', results='hide', fig.keep='all', warning = F, fig.length = 9}
+#plot auctions, own it now sales by neighborhood? maybe try with proportion of demolitions/land sold
+
+f <- 'geo_export_30086289-81b8-46bd-bbf7-9d8d3ae67dce.shp'
+
+neighbor_shp <- st_read(here('detroit_data','Detroit Neighborhoods',f))
+
+o <- own_it_now %>%
+  filter(year==2018) %>%
+  group_by(Neighborhood) %>%
+  summarize(count=n())
+
+o <- data.frame(o)
+colnames(o) <- c('nhood_name', 'own_now')
+
+a <- auctions %>%
+  filter(year==2018) %>%
+  group_by(Neighborhood) %>%
+  summarize(count=n())
+
+a <- data.frame(a)
+colnames(a) <- c('nhood_name', 'auctions')
+
+p <- past_demolitions %>%
+  filter(year==2018) %>%
+  group_by(Neighborhood) %>%
+  summarize(count=n())
+
+p <- data.frame(p)
+colnames(p) <- c('nhood_name', 'dem')
+
+n <- data.frame('nhood_name' = neighbor_shp$nhood_name)
+
+t <- left_join(n, p, by='nhood_name')
+tmp <- left_join(t, a, by='nhood_name') 
+
+both <- left_join(tmp, o, by='nhood_name') %>%
+  mutate(auctions = replace_na(auctions, 0)) %>%
+  mutate(own_now = replace_na(own_now, 0)) %>%
+  mutate(dem = replace_na(dem, 0)) %>%
+  mutate(total = auctions + own_now) %>%
+  mutate(prop = dem/total)
+
+for_graph <- both %>% select(nhood_name, total, prop, dem)
+
+x <- left_join(neighbor_shp, for_graph, by = 'nhood_name')
+
+
+ggplot() +
+  geom_sf(data = x, aes(fill=total), lwd = 0) + 
+  scale_fill_gradient(name ='Number Sold', low = '#31044F', high = '#ED9007') +
+  map_theme +
+  labs(title = 'The Own It Now Program and Auctions Had Most Sales\nOutside of Downtown Detroit in 2018', subtitle = 'Concentration of Land Sales through Auctions and Own It Now by Neighborhood', caption = 'Source: Detroit Open Data Portal') +
+  annotate('text', x = -82.99, y = 42.317, label = 'Downtown Detroit', color = 'black', size = 3.5, family = my_theme$text[['family']], fontface='bold') +
+  annotate("segment", x = -83.02, xend = -83.015, y = 42.335, yend = 42.32, color = 'black')
+
+```
+
+
+
 ##Detroit Land Bank Inventory
 
 Despite increased sales through Auctions and the "Own It Now" program, buildup of city-owned land that is not for sale is often a frustrating barrier for those interested in buying property in the city. It is worth noting that a large portion of the Detroit Land Bank Authority's inventory is categorized as Vacant Land as opposed to property that is for sale to private owners. There is a particularly high number of Vacant Land properties compared to other inventory types in District 5, which is the downtown Detroit area.
@@ -366,71 +483,4 @@ district_own %>%
 ```
 
 
-
-```{r, fig.align = 'center', results='hide', fig.keep='all', warning = F}
-#Blight Violations by District
-
-f <- 'geo_export_c0cba125-2fb0-432f-9a11-e6bb3c7dd89e.shp'
-
-districts_shp <- st_read(here('detroit_data','City Council Districts',f))
-
-max_long <- range(st_coordinates(districts_shp))[1]
-max_lat <- range(st_coordinates(districts_shp))[2]
-
-blight_2018 <- blight_tix %>% 
-  mutate(year = as.Date(`Violation Date`,format = "%m/%d/%Y")) %>%
-  mutate(year = as.numeric(strftime(year, '%Y'))) %>%
-  filter(year==2018) %>%
-  filter(`Violation Latitude` < max_lat) %>%
-  filter(`Violation Longitude` > max_long)
-
-blight_points <- data.frame('Long' = blight_2018$`Violation Longitude`, 'Lat' = blight_2018$`Violation Latitude`)
-tmp <- st_as_sf(blight_points, coords = c('Long','Lat'), crs=st_crs(districts_shp)[[1]])
-tmp <- st_transform(tmp, crs = st_crs(districts_shp)[[2]])
-tmp <- st_intersection(districts_shp, tmp)
-dots <- data.frame(st_coordinates(tmp))
-
-ggplot() +
-  geom_sf(data = districts_shp, fill = '#31044F', color = 'white') + 
-  geom_point(data = dots, aes(x=X, y=Y), size = 0.25, color = '#ED9007', fill = "#ED9007") +
-  annotate('text', x = -83.325, y = 42.42, label = 'District 1', color = 'black', size =3, family = my_theme$text[['family']], fontface='bold') +
-  annotate("segment", x = -83.3, xend = -83.287, y = 42.42, yend = 42.42, color = 'black') +
-  annotate('text', x = -83.17, y = 42.458, label = 'District 2', color = 'black', angle = 2, size = 3, family = my_theme$text[['family']], fontface='bold') +
-  annotate("segment", x = -83.18, xend = -83.19, y = 42.45, yend = 42.444, color = 'black') +
-  annotate('text', x = -83.05, y = 42.458, label = 'District 3', color = 'black', angle = 2, size = 3, family = my_theme$text[['family']], fontface='bold') +
-  annotate("segment", x = -83.05, xend = -83.06, y = 42.451, yend = 42.445, color = 'black') +
-  annotate('text', x = -83.305, y = 42.36, label = 'District 7', color = 'black', size = 3, family = my_theme$text[['family']], fontface='bold') +
-  annotate("segment", x = -83.28, xend = -83.265, y = 42.36, yend = 42.36, color = 'black') +
-  annotate('text', x = -83.05, y = 42.3, label = 'District 6', color = 'black', size = 3, family = my_theme$text[['family']], fontface='bold') +
-  annotate("segment", x = -83.095, xend = -83.073, y = 42.3, yend = 42.3, color = 'black') +
-  annotate('text', x = -83, y = 42.325, label = 'District 5', color = 'black', size = 3, family = my_theme$text[['family']], fontface='bold') +
-  annotate("segment", x = -83.02, xend = -83.01, y = 42.335, yend = 42.33, color = 'black') +
-  annotate('text', x = -82.9, y = 42.38, label = 'District 4', color = 'black', size = 3, family = my_theme$text[['family']], fontface='bold') +
-  annotate("segment", x = -82.94, xend = -82.925, y = 42.38, yend = 42.38, color = 'black') +
-  coord_sf(xlim = c(-83.4, -82.85), ylim = c(42.25, 42.47), expand = FALSE) +
-  map_theme +
-  labs(title = 'High Concentration of Blight in Western and Eastern Detroit', subtitle = '2018 Blight Ticket Violations in Detroit', caption = 'Data Source: Detroit Data Portal') +
-  annotate('text', x = -83, y = 42.27, label = '*Each orange dot represents a blight violation', size=2.5)
-
-```
-
-
-
-```{r, fig.align = 'center', results='hide', fig.keep='all', warning = F}
-#test shape file - Detroit Neighborhoods
-
-#plot demolitions by neighborhood?
-
-f <- 'geo_export_30086289-81b8-46bd-bbf7-9d8d3ae67dce.shp'
-
-neighbor_shp <- st_read(here('detroit_data','Detroit Neighborhoods',f))
-
-past_demolitions %<>% mutate(nhood_name = Neighborhood)
-x<-left_join(neighbor_shp, past_demolitions, by = c('nhood_name'))
-
-
-ggplot(data = neighbor_shp) +
-  geom_sf(fill = 'blue')
-
-```
 
