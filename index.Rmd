@@ -114,6 +114,8 @@ all_counts %>%
 ##Blight Concentration
 
 
+While blight plagues the entire city, it is more concentrated in some areas than others. The southern tip of District 7 (West Detroit) and the eastern part of District 4 (East Detroit) had a highly concentrated number of blight tickets issued in 2018. As these areas are particularly troubled by blight, we will see later that the city has concentrated demolition efforts there as well.
+
 
 ```{r, fig.align = 'center', results='hide', fig.keep='all', warning = F, message = F, fig.width = 9}
 #Blight Violations by District
@@ -245,7 +247,7 @@ comparison_per_year %>%
 
 ##Demolition Funding
 
-The Hardest Hit Funding program is the largest of the city’s funding sources for its demolition program, which, by law, can be spent only in federally-designated areas of the city. The funds are split across the city to carry out demolitions. In 2018, council districts 4 and 7 (east and west Detroit respectively) had the highest number of demolitions funded by HHF. The program has a limit of $25,000 per building so there are some instances in which a house will switch to non-HHF or have city funds used to cover additional costs over the program limit.
+The Hardest Hit Funding program is the largest of the city’s funding sources for its demolition program, which, by law, can be spent only in federally-designated areas of the city. The funds are split across the city to carry out demolitions. In 2018, council districts 4 and 7 (east and west Detroit respectively) had the highest number of demolitions funded by HHF. As shown above, they also had the highest concentration of blight that year. The program has a limit of $25,000 per building so there are some instances in which a house will switch to non-HHF or have city funds used to cover additional costs over the program limit.
 
 
 ```{r, fig.align = 'center'}
@@ -392,12 +394,12 @@ ggplot(all_three, aes(x=year, y=count)) +
 
 
 
-##Auctions/Own It Now Sales by Neighborhood
+##Land Sales Across Detroit
 
+While the Detroit Land Bank Authority has increased its land sales over the past couple of years, the sales are not evenly distributed among areas within Detroit. Specifically, a large number of sales occurred in Western and Eastern Detroit but very few in the central and Downtown areas. It is worth noting that Western and Eastern Detroit also had the highest number of blight violations in 2018.
 
 
 ```{r, fig.align = 'center', results='hide', fig.keep='all', warning = F, fig.length = 9}
-#plot auctions, own it now sales by neighborhood? maybe try with proportion of demolitions/land sold
 
 f <- 'geo_export_30086289-81b8-46bd-bbf7-9d8d3ae67dce.shp'
 
@@ -419,27 +421,35 @@ a <- auctions %>%
 a <- data.frame(a)
 colnames(a) <- c('nhood_name', 'auctions')
 
-p <- past_demolitions %>%
+# p <- past_demolitions %>%
+#   filter(year==2018) %>%
+#   group_by(Neighborhood) %>%
+#   summarize(count=n())
+# 
+# p <- data.frame(p)
+# colnames(p) <- c('nhood_name', 'dem')
+
+s <- side_lot_sales %>%
   filter(year==2018) %>%
   group_by(Neighborhood) %>%
   summarize(count=n())
 
-p <- data.frame(p)
-colnames(p) <- c('nhood_name', 'dem')
+s <- data.frame(s)
+colnames(s) <- c('nhood_name', 'sidelots')
 
 n <- data.frame('nhood_name' = neighbor_shp$nhood_name)
 
-t <- left_join(n, p, by='nhood_name')
+t <- left_join(n, s, by='nhood_name')
 tmp <- left_join(t, a, by='nhood_name') 
 
 both <- left_join(tmp, o, by='nhood_name') %>%
   mutate(auctions = replace_na(auctions, 0)) %>%
   mutate(own_now = replace_na(own_now, 0)) %>%
-  mutate(dem = replace_na(dem, 0)) %>%
-  mutate(total = auctions + own_now) %>%
-  mutate(prop = dem/total)
+  mutate(sidelots = replace_na(sidelots, 0)) %>%
+  mutate(total = auctions + own_now + sidelots) 
+  #mutate(prop = dem/total)
 
-for_graph <- both %>% select(nhood_name, total, prop, dem)
+for_graph <- both %>% select(nhood_name, total)
 
 x <- left_join(neighbor_shp, for_graph, by = 'nhood_name')
 
@@ -448,7 +458,7 @@ ggplot() +
   geom_sf(data = x, aes(fill=total), lwd = 0) + 
   scale_fill_gradient(name ='Number Sold', low = '#31044F', high = '#ED9007') +
   map_theme +
-  labs(title = 'The Own It Now Program and Auctions Had Most Sales\nOutside of Downtown Detroit in 2018', subtitle = 'Concentration of Land Sales through Auctions and Own It Now by Neighborhood', caption = 'Source: Detroit Open Data Portal') +
+  labs(title = 'Public Land Sales Concentrated Outside of Downtown Detroit', subtitle = 'Land Sales through Auctions, Own It Now, and Side Lot Sales Programs \nby Neighborhood in 2018', caption = 'Source: Detroit Open Data Portal') +
   annotate('text', x = -82.99, y = 42.317, label = 'Downtown Detroit', color = 'black', size = 3.5, family = my_theme$text[['family']], fontface='bold') +
   annotate("segment", x = -83.02, xend = -83.015, y = 42.335, yend = 42.32, color = 'black')
 
@@ -458,7 +468,7 @@ ggplot() +
 
 ##Detroit Land Bank Inventory
 
-Despite increased sales through Auctions and the "Own It Now" program, buildup of city-owned land that is not for sale is often a frustrating barrier for those interested in buying property in the city. It is worth noting that a large portion of the Detroit Land Bank Authority's inventory is categorized as Vacant Land as opposed to property that is for sale to private owners. There is a particularly high number of Vacant Land properties compared to other inventory types in District 5, which is the downtown Detroit area.
+Lack of public land sales in the Downtown Detroit area is not necessarily due to lack of interest in the central part of the city. In fact, the downtown area has the most city-owned vacant land that is not for sale. The buildup of city-owned land that is not for sale is often a frustrating barrier for those interested in buying property in the city. It is worth noting that a large portion of the Detroit Land Bank Authority's inventory is categorized as Vacant Land as opposed to property that is for sale to private owners. There is a particularly high number of Vacant Land properties compared to other inventory types in District 5, which is the downtown Detroit area.
 
 
 ```{r, fig.width=9, fig.height=6, fig.align='center'}
