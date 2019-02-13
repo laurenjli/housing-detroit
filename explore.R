@@ -388,3 +388,58 @@ ggplot() +
 # y <- st_union(low)
 #downtown_n <- c('Downtown', 'Greektown')
 #downtown <- neighbor_shp %>% filter(nhood_name %in% downtown_n)
+
+#geom_boxplot(outlier.shape = NA) +
+#geom_jitter()
+
+#grid.arrange(den, box, nrow=2)
+# com <- past_demolitions %>% filter(`Commercial Building` == 'Yes') %>% filter(Price > 0)
+# 
+# ggplot() + 
+#   geom_density(data = com, aes(x=Price))
+# 
+# ggplot() +
+#   geom_boxplot(data = com, aes(y=Price)) + 
+#   coord_flip()
+
+# library(ggridges)
+#   
+# ggplot(data=non_com) +
+#     geom_density_ridges_gradient(aes(x = Price, y=as.factor(demolitions), fill=..x..)) +
+#     scale_fill_gradient(low="orange", high="navy")
+# 
+# 
+# input   = runif(1000, 0, 1)
+# output  = exp(input) + cos(input)^runif(1000,0,1)
+# 
+# name    = rep("Name", length(output))
+# data    = data.frame(input, output, name)
+# data$name = as.factor(data$name)
+# 
+# ggplot(data, aes(x=output, y=name, fill=..x..))+
+#     geom_density_ridges_gradient()+
+#     scale_fill_gradient(low="orange", high="navy")
+
+#histogram of demolition costs
+hist <- ggplot(data=non_com) +
+  geom_histogram(aes(x=Price), fill = colors) +
+  #geom_histogram(data=non_com%>%filter(Price >25000), aes(x=Price), fill='#ED9007') +
+  my_theme +
+  scale_y_continuous(expand=c(0,0), limits= c(-1000,3700), breaks=seq(0,3000,1000), labels=comma) +
+  #scale_x_continuous(expand=c(0,0), limits = c(0,85000), labels=comma) +
+  scale_x_continuous(expand=c(0,0), labels=comma) +
+  #geom_vline(xintercept = 14700, linetype="dashed", color = "#ED9007") +  #add one for HHF limit
+  labs(title = 'Most Demolitions Fall Under The Hardest-Hit Fund Limit Of $25,000\nBut There Are Expensive Outliers', subtitle='Distribution of Cost per Non-Commercial Demolition from 2014 to 2018\n', caption = 'Data Source: Detroit Open Data Portal', y = 'Number of Non-Commercial Demolitions', x = 'Cost') +
+  annotate('segment', x =14235, xend = 14235, y =0, yend = 3550, color = '#6408A1', linetype='dashed') +
+  annotate('segment', x =25000, xend = 25000, y =0, yend = 3550, color = "#ED9007", linetype= 'dashed') +
+  #annotate('point', x = 14700, y=3200, color = '#ED9007') +
+  #annotate('segment', x =14700, xend = 30000, y =3200, yend = 3200, color = '#ED9007') +
+  annotate('rect', xmin=45000, xmax=75000, ymin= 2650, ymax=3150, color = '#6408A1', fill = NA) +
+  annotate('rect', xmin=45000, xmax=75000, ymin= 1750, ymax=2250, color = "#ED9007", fill = NA) +
+  annotate('text', x = 60000, y =2900, color = '#6408A1', label = 'Median Cost: ~$14,000', size=3) +
+  annotate('text', x = 60000, y =2000, color = "#ED9007", label = 'Hardest Hit Fund (HHF)\nLimit: $25,000', fontface='bold',
+           size=3) +
+  annotate('text', x=14235, y = 3650, label = '~$14,000', color = '#6408A1', size=2.5) +
+  annotate('text', x=25000, y = 3650, label = '$25,000', color = "#ED9007", size=2.5) +
+  annotate('text', x = 60000, y =1100, color = "#ED9007", label = 'For costs beyond the $25,000 limit, \nalternative non-HHF or city funds are used.', fontface='bold',
+           size=3)

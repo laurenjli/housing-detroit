@@ -75,7 +75,7 @@ map_theme <- my_theme + theme(panel.grid.major = element_line(color = "white"), 
 Blight tickets are fines issued to property owners for infractions regarding the maintenance of their property’s exterior. The city of Detroit issues thousands of blight violations every month, with spikes in the summer and fall months. Blight violations peaked around the recession and started to decrease into 2012 and 2013. Since then, however, the number of violations has trended upward and is starting to reach recession-level highs again.
 
 
-```{r, fig.width = 9, fig.align='center'}
+```{r Line chart, fig.width = 9, fig.align='center'}
 blight_tix %<>% mutate(`Violation Date` = as.Date(`Violation Date`,format = "%m/%d/%Y")) %>%
   mutate(year = as.numeric(strftime(`Violation Date`, '%Y'))) %>%
   mutate(month = as.numeric(strftime(`Violation Date`, '%m'))) %>%
@@ -120,7 +120,7 @@ all_counts %>%
 While blight plagues the entire city, it is more concentrated in some areas than others. The southern tip of District 7 (West Detroit) and the eastern part of District 4 (East Detroit) had a highly concentrated number of blight tickets issued in 2018. As these areas are particularly troubled by blight, we will see later that the city has concentrated demolition efforts there as well.
 
 
-```{r, fig.align = 'center', results='hide', fig.keep='all', warning = F, message = F, fig.width = 9}
+```{r Blight map, fig.align = 'center', results='hide', fig.keep='all', warning = F, message = F, fig.width = 9}
 #Blight Violations by District
 
 f <- 'geo_export_c0cba125-2fb0-432f-9a11-e6bb3c7dd89e.shp'
@@ -176,7 +176,7 @@ Detroit is struggling to enforce the maintenance of property standards on privat
 
 
 
-```{r, fig.align='center'}
+```{r Blight noncompliance, fig.align='center'}
 #violations with an amount due and balance due > 0 but NA payment status -> bar chart
 blight_tix %>% 
   filter(`Judgment Amount (Total Due)` > 0) %>% 
@@ -207,7 +207,7 @@ blight_tix %>%
 To maintain publically-owned blighted and abandoned land, Detroit has one of the largest demolitions programs in the country. The city spends tens of millions of dollars each year to demolish thousands of buildings. Comparing Detroit's demolition program to those of Philadelphia, Cleveland, and Baltimore, cities also plagued by blight and abandoned homes, gives a sense of the scale of Detroit's program. 
 
 
-```{r, warning=F, fig.align='center'}
+```{r Demolition comparison, warning=F, fig.align='center', echo=F}
 past_demolitions %<>% 
   mutate(`Demolition Date` = as.Date(`Demolition Date`,format = "%m/%d/%Y")) %>%
   mutate(month_year = `Demolition Date`) %>%
@@ -235,7 +235,7 @@ comparison_per_year <- data.frame('city' = factor(c('Detroit', 'Philadelphia', '
 
 det <- comparison_per_year %>% filter(city == 'Detroit')
 
-comparison_per_year %>%
+comp <-comparison_per_year %>%
   ggplot(aes(x=fct_rev(factor(city, levels = comparison_per_year$city)), y=num)) + 
   geom_bar(stat = 'identity', fill = '#31044F') +
   geom_text(aes(label = num), vjust=-1, size = 3, family = my_theme$text[['family']]) +
@@ -253,7 +253,7 @@ comparison_per_year %>%
 The Hardest Hit Funding program is the largest of the city’s funding sources for its demolition program, which, by law, can be spent only in federally-designated areas of the city. The funds are split across the city to carry out demolitions. In 2018, council districts 4 and 7 (east and west Detroit respectively) had the highest number of demolitions funded by HHF. As shown above, they also had the highest concentration of blight that year. The program has a limit of $25,000 per building so there are some instances in which a house will switch to non-HHF or have city funds used to cover additional costs over the program limit.
 
 
-```{r, fig.align = 'center'}
+```{r demolition funding, fig.align = 'center', results='hide', echo=F}
 library(packcircles)
 #circle packing with HHF funded demolitions (2018) - Districts 4 and 7 had most HHF funded demolitions in 2018
 
@@ -269,7 +269,7 @@ circle_data <- cbind(circle_data, packing)
 
 dat.gg <- circleLayoutVertices(packing, npoints=50)
 
-ggplot() +
+circles <- ggplot() +
   geom_polygon(data = dat.gg, aes(x, y, group = id, fill= factor(id, levels = c(2,5,6,3,1,4,7)))) +
   geom_text(data = circle_data, aes(x, y, size=count, label = Council_District), color = 'white', size=3.5, family = my_theme$text[['family']]) +
   coord_fixed(ratio=0.7) +
@@ -287,41 +287,23 @@ ggplot() +
 
 ##Cost of Demolition
 
-```{r}
+```{r demolition distribution, fig.align = 'center', results='hide', fig.keep='all', warning = F, message = F}
 
 non_com <- past_demolitions %>% 
-  filter(`Primary Funding Source` == 'HHF') %>% 
+  filter(`Commercial Building` == 'No') %>% 
   mutate(demolitions=factor('Name')) %>%
   filter(!is.na(Price)) %>%
-  filter(Price > 600)
-
-high <- non_com %>% filter(Price > 60000) %>% mutate(x=0.5)
-
-med <- median(non_com$Price)
-
-den <- ggplot(data = non_com) + 
-  #geom_line(data = non_com, aes(x=Price, fill = Price), stat='density') +
-  geom_density(aes(x=Price), fill = '#31044F', alpha = 0.95) +
-  geom_vline(xintercept = med, linetype="dashed", color = "#ED9007") +
-  #geom_histogram(aes(x=Price, fill = ..x..)) + scale_fill_gradient(low="#31044F", high="#ED9007") +
-  my_theme +
-  scale_y_continuous(expand=c(0,0)) +
-  theme(axis.text.y = element_blank(), axis.ticks = element_blank(), axis.title.y = element_blank(),
-        axis.title.x = element_text(color='white'), axis.text.x = element_text(color='white'), 
-        axis.line.y = element_blank(),
-        legend.position = 'bottom')
+  filter(Price > 500) %>%
+  filter(year < 2019)
 
 box <- ggplot() +
-  geom_boxplot(data = non_com, aes(y=Price), color = "#ED9007", fill = "#31044F") + 
-  #geom_hline(yintercept = med, linetype = 'dashed',color = "#ED9007") +
+  geom_boxplot(data = non_com, aes(y=Price), color = "#31044F", fill = "#31044F", alpha=0.75, 
+               outlier.colour = '#ED9007') + 
   coord_flip() + 
-  #scale_x_continuous(expand=c(0,0), limits = c(0,1)) + 
   scale_y_continuous(expand=c(0,0), limits = c(0,80000)) +
-  #geom_point(data=non_com, aes(x=demolitions, y=Price))
-  #geom_jitter() +
   my_theme +
-  theme(axis.text.y = element_blank(), 
-        axis.ticks.y = element_blank(), 
+  theme(axis.text.y = element_blank(),
+        axis.ticks.y = element_blank(),
         axis.title.y = element_blank(),
         axis.line.y = element_blank(),
         axis.title.x = element_blank(),
@@ -329,43 +311,38 @@ box <- ggplot() +
         axis.text.x = element_text(color='white'),
         axis.line.x = element_blank(),
         plot.margin=unit(c(0,0,0,0),"cm"))
-  #geom_boxplot(outlier.shape = NA) +
-  #geom_jitter()
-
-grid.arrange(den, box, nrow=2)
-# com <- past_demolitions %>% filter(`Commercial Building` == 'Yes') %>% filter(Price > 0)
-# 
-# ggplot() + 
-#   geom_density(data = com, aes(x=Price))
-# 
-# ggplot() +
-#   geom_boxplot(data = com, aes(y=Price)) + 
-#   coord_flip()
-
-# library(ggridges)
-#   
-# ggplot(data=non_com) +
-#     geom_density_ridges_gradient(aes(x = Price, y=as.factor(demolitions), fill=..x..)) +
-#     scale_fill_gradient(low="orange", high="navy")
-# 
-# 
-# input   = runif(1000, 0, 1)
-# output  = exp(input) + cos(input)^runif(1000,0,1)
-# 
-# name    = rep("Name", length(output))
-# data    = data.frame(input, output, name)
-# data$name = as.factor(data$name)
-# 
-# ggplot(data, aes(x=output, y=name, fill=..x..))+
-#     geom_density_ridges_gradient()+
-#     scale_fill_gradient(low="orange", high="navy")
-
-hist <- ggplot(data=non_com) + geom_histogram(aes(x=Price), fill = "#31044F") + my_theme +
-  scale_y_continuous(expand=c(0,0), limits= c(-1000,3000), labels=comma) + scale_x_continuous(expand=c(0,0), limits = c(0,85000), labels=comma) +geom_vline(xintercept = med+100, linetype="dashed", color = "#ED9007")
 
 p2 <- as.grob(box)
 
-hist+ 
+colors <- c(rep('#31044F', 10), rep('#ED9007',20))
+
+hist2 <- ggplot(data=non_com) + 
+  geom_histogram(aes(x=Price), fill = colors) + 
+  #geom_histogram(data=non_com%>%filter(Price >25000), aes(x=Price), fill='#ED9007') +
+  my_theme +
+  scale_y_continuous(expand=c(0,0), limits= c(-1000,3950), breaks=seq(0,3000,1000), labels=comma) + 
+  #scale_x_continuous(expand=c(0,0), limits = c(0,85000), labels=comma) +
+  scale_x_continuous(expand=c(0,0), labels=comma, limits = c(0,85000)) +
+  #geom_vline(xintercept = 14700, linetype="dashed", color = "#ED9007") +  #add one for HHF limit
+  labs(title = 'Most Demolitions Fall Under The Hardest-Hit Fund Limit Of $25,000\nBut There Are Expensive Outliers', subtitle='Distribution of Cost per Non-Commercial Demolition from 2014 to 2018\n', caption = 'Data Source: Detroit Open Data Portal', y = 'Number of Non-Commercial Demolitions', x = 'Cost') +
+  annotate('segment', x =14235, xend = 14235, y =0, yend = 3750, color = '#6408A1', linetype='dashed') +
+  #annotate('segment', x =25000, xend = 25000, y =0, yend = 3550, color = "#ED9007", linetype= 'dashed') +
+  #annotate('point', x = 14700, y=3200, color = '#ED9007') +
+  #annotate('segment', x =14700, xend = 30000, y =3200, yend = 3200, color = '#ED9007') +
+  annotate('rect', xmin=17850, xmax=47850, ymin= 2750, ymax=3250, color = '#6408A1', fill = NA) +
+  annotate('rect', xmin=25000, xmax=55000, ymin= 1750, ymax=2250, color = "#ED9007", fill = NA) +
+  annotate('text', x = 32150, y =3000, color = '#6408A1', label = 'Median Cost: ~$14,000', size=3, 
+           family = my_theme$text[['family']]) +
+  annotate('text', x = 40000, y =2000, color = "#ED9007", label = 'Hardest Hit Fund (HHF)\nLimit: $25,000', 
+           fontface='bold', size=3, family = my_theme$text[['family']]) +
+  annotate('text', x=14235, y = 3880, label = '~$14,000', color = '#6408A1', size=2.5, 
+           family = my_theme$text[['family']]) +
+  #annotate('text', x=25000, y = 3650, label = '$25,000', color = "#ED9007", size=2.5) +
+  annotate('text', x = 50000, y =1100, color = "#ED9007", 
+           label = 'For costs beyond the $25,000 limit, \nalternative non-HHF or city funds are used.', 
+           fontface='bold', family = my_theme$text[['family']],size=3)
+
+hist2 + 
   annotation_custom(
     grob = p2,
     xmin = 0,
@@ -373,8 +350,6 @@ hist+
     ymin = -1000,
     ymax = -250
   )
-  
-
 
 ```
 
@@ -385,7 +360,7 @@ After demolition, a number of lots are sold through a program that sells side lo
 
 
 
-```{r, fig.width=9, fig.align='center'}
+```{r side lot sales, fig.width=9, fig.align='center'}
 side_lot_sales %<>% 
   mutate(`Closing Date` = as.Date(`Closing Date`,format = "%m/%d/%Y")) %>%
   mutate(year = `Closing Date`) %>%
@@ -442,7 +417,7 @@ side_lot_sales %>%
 The side lot sales program is just one component of the Detroit Land Bank Authority. DLBA is a public agency and the city’s largest landowner with a number of vacant lots and abandoned houses. The side lot sales program is by far the most active by number of properties sold; however, the DLBA has increased its efforts to sell structures through Auctions and its "Own It Now" Program over the past couple of years.
 
 
-```{r, fig.align = 'center'}
+```{r comparison sales, fig.align = 'center'}
 auctions %<>% 
   mutate(`Closing Date` = as.Date(`Closing Date`,format = "%m/%d/%Y")) %>%
   mutate(year = `Closing Date`) %>%
@@ -496,7 +471,7 @@ ggplot(all_three, aes(x=year, y=count)) +
 While the Detroit Land Bank Authority has increased its land sales over the past couple of years, the sales are not evenly distributed among areas within Detroit. Specifically, a large number of sales occurred in Western and Eastern Detroit but very few in the central and Downtown areas. It is worth noting that Western and Eastern Detroit also had the highest number of blight violations in 2018.
 
 
-```{r, fig.align = 'center', results='hide', fig.keep='all', warning = F, fig.length = 9}
+```{r choropleth, fig.align = 'center', results='hide', fig.keep='all', warning = F, fig.length = 9}
 
 f <- 'geo_export_30086289-81b8-46bd-bbf7-9d8d3ae67dce.shp'
 
@@ -569,7 +544,7 @@ ggplot() +
 Lack of public land sales in the Downtown Detroit area is not necessarily due to lack of interest in the central part of the city. In fact, the downtown area has the most city-owned vacant land that is not for sale. The buildup of city-owned land that is not for sale is often a frustrating barrier for those interested in buying property in the city. It is worth noting that a large portion of the Detroit Land Bank Authority's inventory is categorized as Vacant Land as opposed to property that is for sale to private owners. There is a particularly high number of Vacant Land properties compared to other inventory types in District 5, which is the downtown Detroit area.
 
 
-```{r, fig.width=9, fig.height=6, fig.align='center'}
+```{r heatmap, fig.width=9, fig.height=6, fig.align='center'}
 #Heatmap
 district_own <- land_inv %>%
   mutate(District = paste('District', `Council District`)) %>%
