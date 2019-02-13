@@ -15,6 +15,9 @@ library(magrittr)
 library(scales)
 library(sf)
 library(ggthemes)
+library(grid)
+library(gridExtra)
+library(ggplotify)
 
 #read in csv
 blight_tix <- read_csv(here('detroit_data','Blight_Violations.csv'))
@@ -282,6 +285,99 @@ ggplot() +
 ```
 
 
+##Cost of Demolition
+
+```{r}
+
+non_com <- past_demolitions %>% 
+  filter(`Primary Funding Source` == 'HHF') %>% 
+  mutate(demolitions=factor('Name')) %>%
+  filter(!is.na(Price)) %>%
+  filter(Price > 600)
+
+high <- non_com %>% filter(Price > 60000) %>% mutate(x=0.5)
+
+med <- median(non_com$Price)
+
+den <- ggplot(data = non_com) + 
+  #geom_line(data = non_com, aes(x=Price, fill = Price), stat='density') +
+  geom_density(aes(x=Price), fill = '#31044F', alpha = 0.95) +
+  geom_vline(xintercept = med, linetype="dashed", color = "#ED9007") +
+  #geom_histogram(aes(x=Price, fill = ..x..)) + scale_fill_gradient(low="#31044F", high="#ED9007") +
+  my_theme +
+  scale_y_continuous(expand=c(0,0)) +
+  theme(axis.text.y = element_blank(), axis.ticks = element_blank(), axis.title.y = element_blank(),
+        axis.title.x = element_text(color='white'), axis.text.x = element_text(color='white'), 
+        axis.line.y = element_blank(),
+        legend.position = 'bottom')
+
+box <- ggplot() +
+  geom_boxplot(data = non_com, aes(y=Price), color = "#ED9007", fill = "#31044F") + 
+  #geom_hline(yintercept = med, linetype = 'dashed',color = "#ED9007") +
+  coord_flip() + 
+  #scale_x_continuous(expand=c(0,0), limits = c(0,1)) + 
+  scale_y_continuous(expand=c(0,0), limits = c(0,80000)) +
+  #geom_point(data=non_com, aes(x=demolitions, y=Price))
+  #geom_jitter() +
+  my_theme +
+  theme(axis.text.y = element_blank(), 
+        axis.ticks.y = element_blank(), 
+        axis.title.y = element_blank(),
+        axis.line.y = element_blank(),
+        axis.title.x = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.text.x = element_text(color='white'),
+        axis.line.x = element_blank(),
+        plot.margin=unit(c(0,0,0,0),"cm"))
+  #geom_boxplot(outlier.shape = NA) +
+  #geom_jitter()
+
+grid.arrange(den, box, nrow=2)
+# com <- past_demolitions %>% filter(`Commercial Building` == 'Yes') %>% filter(Price > 0)
+# 
+# ggplot() + 
+#   geom_density(data = com, aes(x=Price))
+# 
+# ggplot() +
+#   geom_boxplot(data = com, aes(y=Price)) + 
+#   coord_flip()
+
+# library(ggridges)
+#   
+# ggplot(data=non_com) +
+#     geom_density_ridges_gradient(aes(x = Price, y=as.factor(demolitions), fill=..x..)) +
+#     scale_fill_gradient(low="orange", high="navy")
+# 
+# 
+# input   = runif(1000, 0, 1)
+# output  = exp(input) + cos(input)^runif(1000,0,1)
+# 
+# name    = rep("Name", length(output))
+# data    = data.frame(input, output, name)
+# data$name = as.factor(data$name)
+# 
+# ggplot(data, aes(x=output, y=name, fill=..x..))+
+#     geom_density_ridges_gradient()+
+#     scale_fill_gradient(low="orange", high="navy")
+
+hist <- ggplot(data=non_com) + geom_histogram(aes(x=Price), fill = "#31044F") + my_theme +
+  scale_y_continuous(expand=c(0,0), limits= c(-1000,3000), labels=comma) + scale_x_continuous(expand=c(0,0), limits = c(0,85000), labels=comma) +geom_vline(xintercept = med+100, linetype="dashed", color = "#ED9007")
+
+p2 <- as.grob(box)
+
+hist+ 
+  annotation_custom(
+    grob = p2,
+    xmin = 0,
+    xmax = 80000,
+    ymin = -1000,
+    ymax = -250
+  )
+  
+
+
+```
+
 
 ##Side Lot Sales
 
@@ -334,7 +430,7 @@ side_lot_sales %>%
   my_theme + 
   theme(legend.position = c(0.92,0.9),legend.key=element_blank()) + 
   scale_x_continuous(expand=c(0,0), lim = c(2015,2018.02)) + scale_y_continuous(expand=c(0,0), lim = c(0,250)) +
-  labs(title = 'Claytown Has the Largest Number of Side Lot Sales', subtitle ='Side Lot Sales by Neighborhood since 2015', x='Year', y='Number of Side Lots Sold', caption='Data Source: Detroit Open Data Portal') 
+  labs(title = 'Claytown Has the Largest Number of Side Lot Sales,\nFollowed by Airport Sub, Brightmoor, And Chadsey Condon ', subtitle ='Side Lot Sales by Neighborhood since 2015', x='Year', y='Number of Side Lots Sold', caption='Data Source: Detroit Open Data Portal') 
 
 ```
 
@@ -380,7 +476,6 @@ c <- side_lot_sales %>%
 
 all_three <- rbind(a,b)
 all_three <- rbind(all_three,c)
-#all_three %<>% mutate(pct_change = (count/lag(count)-1) * 100)
   
 
 ggplot(all_three, aes(x=year, y=count)) + 
