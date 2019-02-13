@@ -380,3 +380,11 @@ det_zips <- left_join(zips, homes, by = 'zipcode')
 ggplot() +
   geom_sf(data=zips) +
   geom_sf(data=det_zips, aes(fill = HC01_EST_VC10)) + scale_fill_gradient(name ='Number of Properties', low = '#31044F', high = '#ED9007')
+
+
+# outside <- c('Oakwood Heights', 'Carbon Works', 'Delray', 'Arden Park', 'Belle Isle', 'Gold Coast', 'Indian Village',
+#              'Rivertown', 'Marina District', 'Waterworks Park', 'Joseph Berry Sub')
+# low %<>% filter(!nhood_name %in% outside)
+# y <- st_union(low)
+#downtown_n <- c('Downtown', 'Greektown')
+#downtown <- neighbor_shp %>% filter(nhood_name %in% downtown_n)

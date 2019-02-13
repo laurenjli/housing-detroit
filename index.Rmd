@@ -142,7 +142,7 @@ dots <- data.frame(st_coordinates(tmp))
 
 ggplot() +
   geom_sf(data = districts_shp, fill = '#31044F', color = 'white') + 
-  geom_point(data = dots, aes(x=X, y=Y), size = 0.25, color = '#ED9007', fill = "#ED9007") +
+  geom_point(data = dots, aes(x=X, y=Y), size = 0.25, color = '#ED9007', fill = "#ED9007", alpha=0.75) +
   annotate('text', x = -83.325, y = 42.42, label = 'District 1', color = 'black', size =3, family = my_theme$text[['family']], fontface='bold') +
   annotate("segment", x = -83.3, xend = -83.287, y = 42.42, yend = 42.42, color = 'black') +
   annotate('text', x = -83.17, y = 42.458, label = 'District 2', color = 'black', angle = 2, size = 3, family = my_theme$text[['family']], fontface='bold') +
@@ -331,7 +331,9 @@ side_lot_sales %>%
   scale_colour_manual(values=c('Claytown' = '#ED9007', 'Airport Sub' = '#8C82FA', 'Brightmoor' = '#6408A1', 'Chadsey Condon' = '#31044F', 'Other' = '#D3D3D3'), 
                        name="Neighborhood", breaks=c("Claytown", "Airport Sub", "Brightmoor", 'Chadsey Condon', 'Other'),
                        labels=c("Claytown", "Airport Sub", "Brightmoor", 'Chadsey Condon', 'Other')) +
-  my_theme + theme(legend.position = c(0.92,0.9),legend.key=element_blank()) + scale_x_continuous(expand=c(0,0), lim = c(2015,2018.02)) + scale_y_continuous(expand=c(0,0)) +
+  my_theme + 
+  theme(legend.position = c(0.92,0.9),legend.key=element_blank()) + 
+  scale_x_continuous(expand=c(0,0), lim = c(2015,2018.02)) + scale_y_continuous(expand=c(0,0), lim = c(0,250)) +
   labs(title = 'Claytown Has the Largest Number of Side Lot Sales', subtitle ='Side Lot Sales by Neighborhood since 2015', x='Year', y='Number of Side Lots Sold', caption='Data Source: Detroit Open Data Portal') 
 
 ```
@@ -386,7 +388,7 @@ ggplot(all_three, aes(x=year, y=count)) +
   facet_grid(cols = vars(factor(category, levels = c('Auctions', '"Own It Now" Sale', 'Side Lot Sale')))) + 
   my_theme + 
   theme(strip.text = element_text(face='bold', color = '#ED9007', size=10), strip.background = element_rect(fill='white',color='white')) +
-  scale_y_continuous(labels=comma) +
+  scale_y_continuous(expand=c(0,0), labels=comma) + scale_x_continuous(expand=c(0,0)) +
   labs(title = 'Auctions and "Own It Now" Sales Are Increasing\nbut Side Lot Sales Are More Common', subtitle = 'Properties Sold through Detroit Land Bank Authority Programs Each Year', caption = 'Data Source: Detroit Open Data Portal', x='Year', y='Number of Properties Sold')
 
 ```
@@ -421,14 +423,6 @@ a <- auctions %>%
 a <- data.frame(a)
 colnames(a) <- c('nhood_name', 'auctions')
 
-# p <- past_demolitions %>%
-#   filter(year==2018) %>%
-#   group_by(Neighborhood) %>%
-#   summarize(count=n())
-# 
-# p <- data.frame(p)
-# colnames(p) <- c('nhood_name', 'dem')
-
 s <- side_lot_sales %>%
   filter(year==2018) %>%
   group_by(Neighborhood) %>%
@@ -447,20 +441,29 @@ both <- left_join(tmp, o, by='nhood_name') %>%
   mutate(own_now = replace_na(own_now, 0)) %>%
   mutate(sidelots = replace_na(sidelots, 0)) %>%
   mutate(total = auctions + own_now + sidelots) 
-  #mutate(prop = dem/total)
 
 for_graph <- both %>% select(nhood_name, total)
 
 x <- left_join(neighbor_shp, for_graph, by = 'nhood_name')
 
+low <- x %>% filter(total < 2) %>% filter(district_n == 5 | district_n == 6)
+
+outside <- c('Oakwood Heights', 'Carbon Works', 'Delray', 'Arden Park', 'Belle Isle', 'Gold Coast', 'Indian Village',
+             'Rivertown', 'Marina District', 'Waterworks Park', 'Joseph Berry Sub', 'Jeffries', 'Southwest Detroit',
+             'Russell Industrial')
+low %<>% filter(!nhood_name %in% outside)
+border <- st_union(low)
 
 ggplot() +
-  geom_sf(data = x, aes(fill=total), lwd = 0) + 
-  scale_fill_gradient(name ='Number Sold', low = '#31044F', high = '#ED9007') +
+  annotate("segment", x = -83.047, xend = -83.015, y = 42.33, yend = 42.32, color = 'black') +
+  geom_sf(data = x, aes(fill=total), lwd=0) + 
+  geom_sf(data=border, color = 'white', fill = NA) + 
+  annotate("segment", x = -83.068, xend = -83.065, y = 42.3424, yend = 42.337, color = '#31044F') +
+  scale_fill_gradient(name ='Land Sold', low = '#31044F', high = '#ED9007') +
   map_theme +
-  labs(title = 'Public Land Sales Concentrated Outside of Downtown Detroit', subtitle = 'Land Sales through Auctions, Own It Now, and Side Lot Sales Programs \nby Neighborhood in 2018', caption = 'Source: Detroit Open Data Portal') +
-  annotate('text', x = -82.99, y = 42.317, label = 'Downtown Detroit', color = 'black', size = 3.5, family = my_theme$text[['family']], fontface='bold') +
-  annotate("segment", x = -83.02, xend = -83.015, y = 42.335, yend = 42.32, color = 'black')
+  labs(title = 'Public Land Sales Concentrated Outside of Central Detroit', subtitle = '2018 Land Sales through Auctions, Own It Now, and Side Lot Sales Programs \nby Neighborhood', caption = 'Source: Detroit Open Data Portal') +
+  annotate('text', x = -82.99, y = 42.315, label = 'Central Detroit', color = 'black', size = 3.5, family = my_theme$text[['family']], fontface='bold')
+
 
 ```
 
@@ -487,9 +490,13 @@ district_own %>%
   labs(title = "A Large Portion of City-Owned Land Is Not For Sale", subtitle = 'Detroit Land Bank Authority Inventory Status as of January 15, 2019', y = 'Inventory Status', x='Council District', caption = 'Data Source: Detroit Open Data Portal') +
   scale_fill_gradient(name ='Number of Properties', low = '#31044F', high = '#ED9007') + 
   coord_fixed(ratio = 1) +
-  my_theme +
-  geom_text(aes(label = count), color = '#D3D3D3', size=3, family = my_theme$text[['family']], fontface='bold') +
+  my_theme + 
+  scale_x_discrete(expand=c(0,0)) +
+  scale_y_discrete(expand=c(0,0)) +
+  geom_text(aes(label = count), color = 'white', size=3, family = my_theme$text[['family']], fontface='bold') +
   theme(axis.text.x = element_text(angle = 60, hjust = 1, vjust=1))
+
+#'#D3D3D3'
 ```
 
 
