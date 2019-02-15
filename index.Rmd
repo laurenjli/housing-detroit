@@ -289,6 +289,14 @@ circles <- ggplot() +
 
 ```{r demolition distribution, fig.align = 'center', results='hide', fig.keep='all', warning = F, message = F}
 
+past_demolitions %<>% 
+  mutate(`Demolition Date` = as.Date(`Demolition Date`,format = "%m/%d/%Y")) %>%
+  mutate(month_year = `Demolition Date`) %>%
+  mutate(year = as.numeric(strftime(`Demolition Date`, '%Y'))) %>%
+  mutate(month = as.numeric(strftime(`Demolition Date`, '%m'))) %>%
+  mutate(month_year = as.Date(paste(strftime(month_year, '%Y-%m-'),'15',sep=''))) %>%
+  mutate(Council_District = paste('District', Council_District))
+
 non_com <- past_demolitions %>% 
   filter(`Commercial Building` == 'No') %>% 
   mutate(demolitions=factor('Name')) %>%
@@ -314,7 +322,7 @@ box <- ggplot() +
 
 p2 <- as.grob(box)
 
-colors <- c(rep('#31044F', 10), rep('#ED9007',20))
+colors <- c(rep('#31044F', 9), rep('#ED9007',21))
 
 hist2 <- ggplot(data=non_com) + 
   geom_histogram(aes(x=Price), fill = colors) + 
@@ -326,19 +334,18 @@ hist2 <- ggplot(data=non_com) +
   #geom_vline(xintercept = 14700, linetype="dashed", color = "#ED9007") +  #add one for HHF limit
   labs(title = 'Most Demolitions Fall Under The Hardest-Hit Fund Limit Of $25,000\nBut There Are Expensive Outliers', subtitle='Distribution of Cost per Non-Commercial Demolition from 2014 to 2018\n', caption = 'Data Source: Detroit Open Data Portal', y = 'Number of Non-Commercial Demolitions', x = 'Cost') +
   annotate('segment', x =14235, xend = 14235, y =0, yend = 3750, color = '#6408A1', linetype='dashed') +
-  #annotate('segment', x =25000, xend = 25000, y =0, yend = 3550, color = "#ED9007", linetype= 'dashed') +
-  #annotate('point', x = 14700, y=3200, color = '#ED9007') +
+  annotate('segment', x =25000, xend = 25000, y =0, yend = 3750, color = "#ED9007", linetype= 'dashed') +
   #annotate('segment', x =14700, xend = 30000, y =3200, yend = 3200, color = '#ED9007') +
-  annotate('rect', xmin=17850, xmax=47850, ymin= 2750, ymax=3250, color = '#6408A1', fill = NA) +
-  annotate('rect', xmin=25000, xmax=55000, ymin= 1750, ymax=2250, color = "#ED9007", fill = NA) +
-  annotate('text', x = 32150, y =3000, color = '#6408A1', label = 'Median Cost: ~$14,000', size=3, 
+  annotate('rect', xmin=29000, xmax=59000, ymin= 2750, ymax=3250, color = '#6408A1', fill = NA) +
+  annotate('rect', xmin=39000, xmax=69000, ymin= 1750, ymax=2250, color = "#ED9007", fill = NA) +
+  annotate('text', x = 44000, y =3000, color = '#6408A1', label = 'Median Cost: ~$14,000', size=3, 
            family = my_theme$text[['family']]) +
-  annotate('text', x = 40000, y =2000, color = "#ED9007", label = 'Hardest Hit Fund (HHF)\nLimit: $25,000', 
+  annotate('text', x = 54000, y =2000, color = "#ED9007", label = 'Hardest Hit Fund (HHF)\nLimit: $25,000', 
            fontface='bold', size=3, family = my_theme$text[['family']]) +
   annotate('text', x=14235, y = 3880, label = '~$14,000', color = '#6408A1', size=2.5, 
            family = my_theme$text[['family']]) +
-  #annotate('text', x=25000, y = 3650, label = '$25,000', color = "#ED9007", size=2.5) +
-  annotate('text', x = 50000, y =1100, color = "#ED9007", 
+  annotate('text', x=25000, y = 3880, label = '$25,000', color = "#ED9007", size=2.5) +
+  annotate('text', x = 65000, y =1100, color = "#ED9007", 
            label = 'For costs beyond the $25,000 limit, \nalternative non-HHF or city funds are used.', 
            fontface='bold', family = my_theme$text[['family']],size=3)
 
