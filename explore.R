@@ -443,3 +443,41 @@ hist <- ggplot(data=non_com) +
   annotate('text', x=25000, y = 3650, label = '$25,000', color = "#ED9007", size=2.5) +
   annotate('text', x = 60000, y =1100, color = "#ED9007", label = 'For costs beyond the $25,000 limit, \nalternative non-HHF or city funds are used.', fontface='bold',
            size=3)
+
+
+past_demolitions %<>% 
+  mutate(`Demolition Date` = as.Date(`Demolition Date`,format = "%m/%d/%Y")) %>%
+  mutate(month_year = `Demolition Date`) %>%
+  mutate(year = as.numeric(strftime(`Demolition Date`, '%Y'))) %>%
+  mutate(month = as.numeric(strftime(`Demolition Date`, '%m'))) %>%
+  mutate(month_year = as.Date(paste(strftime(month_year, '%Y-%m-'),'15',sep=''))) %>%
+  mutate(Council_District = paste('District', Council_District))
+
+d <- past_demolitions %>%
+  filter(year >= 2013) %>%
+  filter(year <= 2017)
+
+philly %<>% mutate(start_date = strftime(start_date,'%Y-%m-%d')) %>% mutate(year = as.numeric(strftime(start_date, '%Y')))
+
+
+p <- philly %>%
+  filter(!is.na(completed_date)) %>%
+  filter(year >= 2013) %>%
+  filter(year <= 2017)
+
+#cleveland: http://portal.cleveland-oh.gov/05.03.2018TenThousandDemos
+#baltimore: http://www.baltimorehousing.org/code_dem 
+
+comparison_per_year <- data.frame('city' = factor(c('Detroit', 'Philadelphia', 'Cleveland', 'Baltimore')), 'num' = c(round(nrow(d)/5),round(nrow(p)/5), 3450/5, 300))
+
+det <- comparison_per_year %>% filter(city == 'Detroit')
+
+comp <-comparison_per_year %>%
+  ggplot(aes(x=fct_rev(factor(city, levels = comparison_per_year$city)), y=num)) + 
+  geom_bar(stat = 'identity', fill = '#31044F') +
+  geom_text(aes(label = num), vjust=-1, size = 3, family = my_theme$text[['family']]) +
+  geom_bar(data = det, aes(x=city, y=num), stat='identity', fill = 'orange') +
+  labs(title = 'Detroit Demolishes Over 2500 Buildings a Year, \nOutpaces Other Major Cities', subtitle = 'Average Yearly Demolitions in Select Cities\n with Demolition Programs (2013-2017)', caption = 'Data Source: Detroit Open Data Portal, OpenDataPhilly, City of Cleveland Portal, Baltimore Housing Office', x='City', y='Average Demolitions per Year') +
+  scale_y_continuous(name = 'Average Demolitions per Year', breaks=seq(0,3000,1000), labels = c('0','1000','2000','3000'), limits = c(0,3000)) + theme_classic() +
+  my_theme + 
+  theme(plot.title = element_text(hjust = 0.25, vjust=-18), plot.subtitle = element_text(hjust=0.25, vjust=-23)) #plot.margin=grid::unit(c(0,0,0,0), "mm"))

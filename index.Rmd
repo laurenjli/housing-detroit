@@ -4,6 +4,10 @@ author: "Lauren Li"
 output: 
   html_document:
     code_folding: hide
+    toc: true
+    toc_depth: 2
+    toc_float:
+      collapsed: false
 ---
 
 ```{r setup, include=FALSE, warning=FALSE}
@@ -25,7 +29,7 @@ side_lot_sales <- read_csv(here('detroit_data','Side_Lot_Sales.csv'))
 own_it_now <- read_csv(here('detroit_data','Own_It_Now_Sales.csv'))
 auctions <- read_csv(here('detroit_data','DLBA_Auctions_Closed.csv'))
 past_demolitions <- read_csv(here('detroit_data', 'Detroit_Demolitions.csv'))
-philly <- read_csv(here('detroit_data','li_demolitions.csv'))
+#philly <- read_csv(here('detroit_data','li_demolitions.csv'))
 land_inv <- read_csv(here('detroit_data', 'Land_Bank_Inventory.csv'))
 #contracted <- read_csv(here('detroit_data', 'Upcoming_Demolitions.csv'))
 #planned <- read_csv(here('detroit_data', 'Demolition_Pipeline.csv'))
@@ -147,10 +151,14 @@ blight_tix %>%
 
 
 
-##Blight Concentration
+##Relationship between Blight Violations and the Demolitions Program
 
 
-While blight plagues the entire city, it is more concentrated in some areas than others. The southern tip of District 7 (West Detroit) and the eastern part of District 4 (East Detroit) had a highly concentrated number of blight tickets issued in 2018. As these areas are particularly troubled by blight, we will see later that the city has concentrated demolition efforts there as well.
+While blight plagues the entire city, it is more concentrated in some areas than others. The southern tip of District 7 (West Detroit) and the eastern part of District 4 (East Detroit) had a highly concentrated number of blight tickets issued in 2018. 
+
+To maintain publically-owned blighted and abandoned land, Detroit has one of the largest demolitions programs in the country. The city spends tens of millions of dollars each year to demolish thousands of buildings. In 2018, council districts 4 and 7 (east and west Detroit respectively) had the highest number of demolitions. As noted, they also had the highest concentration of blight that year. 
+
+You can compare the concentration of blight and demolitions in 2018 in the two visualizations below.
 
 
 ```{r Blight map, fig.align = 'center', results='hide', fig.keep='all', warning = F, message = F, fig.width = 9}
@@ -178,7 +186,7 @@ dots <- data.frame(st_coordinates(tmp))
 
 blight_map <- ggplot() +
   geom_sf(data = districts_shp, fill = '#31044F', color = 'white') + 
-  geom_point(data = dots, aes(x=X, y=Y), size = 0.25, color = '#ED9007', fill = "#ED9007", alpha=0.5) +
+  geom_point(data = dots, aes(x=X, y=Y), size = 0.6, color = '#ED9007', fill = "#ED9007", alpha=0.5) +
   annotate('text', x = -83.325, y = 42.42, label = 'District 1', color = 'black', size =3, family = my_theme$text[['family']], fontface='bold') +
   annotate("segment", x = -83.3, xend = -83.287, y = 42.42, yend = 42.42, color = 'black') +
   annotate('text', x = -83.17, y = 42.458, label = 'District 2', color = 'black', angle = 2, size = 3, family = my_theme$text[['family']], fontface='bold') +
@@ -195,7 +203,7 @@ blight_map <- ggplot() +
   annotate("segment", x = -82.94, xend = -82.925, y = 42.38, yend = 42.38, color = 'black') +
   coord_sf(xlim = c(-83.4, -82.85), ylim = c(42.25, 42.47), expand = FALSE) +
   map_theme +
-  labs(title = 'High Concentration of Blight in Western and Eastern Detroit', subtitle = '2018 Blight Ticket Violations in Detroit', caption = 'Data Source: Detroit Data Portal') +
+  labs(title = 'High Concentration of Blight in Districts 4 and 7', subtitle = '2018 Blight Ticket Violations in Detroit', caption = 'Data Source: Detroit Data Portal') +
   annotate('point', x = -83.075, y = 42.27, color = '#ED9007', fill = "#ED9007") +
   annotate('text', x = -83, y = 42.27, label = 'Represents one blight violation', size=3)
 
@@ -204,14 +212,7 @@ blight_map
 
 
 
-
-##Demolition Program
-
-
-To maintain publically-owned blighted and abandoned land, Detroit has one of the largest demolitions programs in the country. The city spends tens of millions of dollars each year to demolish thousands of buildings. In 2018, council districts 4 and 7 (east and west Detroit respectively) had the highest number of demolitions. As shown above, they also had the highest concentration of blight that year. 
-
-
-```{r, fig.align= 'center', fig.width = 9}
+```{r, fig.align= 'center', fig.width = 9, results='hide', fig.keep='all', warning = F, message = F}
 past_demolitions %<>% 
   mutate(`Demolition Date` = as.Date(`Demolition Date`,format = "%m/%d/%Y")) %>%
   mutate(month_year = `Demolition Date`) %>%
@@ -220,18 +221,26 @@ past_demolitions %<>%
   mutate(month_year = as.Date(paste(strftime(month_year, '%Y-%m-'),'15',sep='')))
 
 sym <- past_demolitions %>%
-  filter(year==2018)
-  #mutate(districts = factor(Council_District)) %>%
-  #group_by(districts) %>%
-  #summarize(count = n())
+  filter(year==2018) 
 
-#cent <- left_join(st_centroid(districts_shp), sym, by = 'districts')
+#tot <- nrow(sym)
+
+ct <- sym %>%
+  mutate(districts = factor(Council_District)) %>%
+  group_by(districts) %>%
+  summarize(count = n())
+
+all <- left_join(districts_shp, ct, by = 'districts')
+#cent <- all %>% filter(districts == 4 | districts == 7)
 
 dem_map <- ggplot() +
   #geom_sf(data = districts_shp, fill = '#31044F', color = 'white') + 
-  geom_sf(data = districts_shp, fill = '#31044F', color = 'white') + 
-  #geom_sf(data= cent, aes(size=count), color = '#ED9007') +
-  geom_point(data = sym, aes(x=Longitude, y=Latitude), color = '#8C82FA', alpha=0.5) +
+  geom_sf(data = all, fill = '#31044F', color = 'white') + 
+  #geom_sf(data= cent, color = '#ED9007', fill = '#ED9007') +
+  #geom_sf(data= cent, color = '#ED9007', fill = '#ED9007') + 
+  #geom_sf_text(data = all, aes(label = count), colour = "black") +
+  geom_point(data = sym, aes(x=Longitude, y=Latitude), size = 0.85, color = '#8C82FA', alpha=0.5) +
+  geom_sf_label(data = all, aes(label = count), color = 'black', size = 2) +
   scale_size(range = c(4, 12)) +
   annotate('text', x = -83.325, y = 42.42, label = 'District 1', color = 'black', size =3, family = my_theme$text[['family']], fontface='bold') +
     annotate("segment", x = -83.3, xend = -83.287, y = 42.42, yend = 42.42, color = 'black') +
@@ -249,52 +258,11 @@ dem_map <- ggplot() +
     annotate("segment", x = -82.94, xend = -82.925, y = 42.38, yend = 42.38, color = 'black') +
     coord_sf(xlim = c(-83.4, -82.85), ylim = c(42.25, 42.47), expand = FALSE) +
     map_theme +
-    labs(title = 'High Concentration of Demolitions in Western and Eastern Detroit', subtitle = '2018 Demolitions in Detroit', caption = 'Data Source: Detroit Open Data Portal') +
+    labs(title = 'Districts 4 and 7 Also Had the Highest Number of Demolitions', subtitle = '2018 Demolitions in Detroit', caption = 'Data Source: Detroit Open Data Portal') +
     annotate('point', x = -83.075, y = 42.27, color = '#8C82FA', fill = "#8C82FA") +
     annotate('text', x = -83, y = 42.27, label = 'Represents one demolition', size=3)
 
 dem_map
-```
-
-
-```{r Demolition comparison, warning=F, fig.align='center', echo=F}
-past_demolitions %<>% 
-  mutate(`Demolition Date` = as.Date(`Demolition Date`,format = "%m/%d/%Y")) %>%
-  mutate(month_year = `Demolition Date`) %>%
-  mutate(year = as.numeric(strftime(`Demolition Date`, '%Y'))) %>%
-  mutate(month = as.numeric(strftime(`Demolition Date`, '%m'))) %>%
-  mutate(month_year = as.Date(paste(strftime(month_year, '%Y-%m-'),'15',sep=''))) %>%
-  mutate(Council_District = paste('District', Council_District))
-
-d <- past_demolitions %>%
-  filter(year >= 2013) %>%
-  filter(year <= 2017)
-
-philly %<>% mutate(start_date = strftime(start_date,'%Y-%m-%d')) %>% mutate(year = as.numeric(strftime(start_date, '%Y')))
-
-
-p <- philly %>%
-  filter(!is.na(completed_date)) %>%
-  filter(year >= 2013) %>%
-  filter(year <= 2017)
-
-#cleveland: http://portal.cleveland-oh.gov/05.03.2018TenThousandDemos
-#baltimore: http://www.baltimorehousing.org/code_dem 
-
-comparison_per_year <- data.frame('city' = factor(c('Detroit', 'Philadelphia', 'Cleveland', 'Baltimore')), 'num' = c(round(nrow(d)/5),round(nrow(p)/5), 3450/5, 300))
-
-det <- comparison_per_year %>% filter(city == 'Detroit')
-
-comp <-comparison_per_year %>%
-  ggplot(aes(x=fct_rev(factor(city, levels = comparison_per_year$city)), y=num)) + 
-  geom_bar(stat = 'identity', fill = '#31044F') +
-  geom_text(aes(label = num), vjust=-1, size = 3, family = my_theme$text[['family']]) +
-  geom_bar(data = det, aes(x=city, y=num), stat='identity', fill = 'orange') +
-  labs(title = 'Detroit Demolishes Over 2500 Buildings a Year, \nOutpaces Other Major Cities', subtitle = 'Average Yearly Demolitions in Select Cities\n with Demolition Programs (2013-2017)', caption = 'Data Source: Detroit Open Data Portal, OpenDataPhilly, City of Cleveland Portal, Baltimore Housing Office', x='City', y='Average Demolitions per Year') +
-  scale_y_continuous(name = 'Average Demolitions per Year', breaks=seq(0,3000,1000), labels = c('0','1000','2000','3000'), limits = c(0,3000)) + theme_classic() +
-  my_theme + 
-  theme(plot.title = element_text(hjust = 0.25, vjust=-18), plot.subtitle = element_text(hjust=0.25, vjust=-23)) #plot.margin=grid::unit(c(0,0,0,0), "mm"))
-
 ```
 
 
@@ -447,7 +415,7 @@ side_lot_sales %>%
   summarize(count=n()) %>%
   ggplot(aes(x=year, y=count, group=`Neighborhood`)) + 
   geom_line(color='#D3D3D3') +
-  geom_line(data=top_5, aes(x=year, y=count, color=`Neighborhood`), size=2) +
+  geom_line(data=top_5, aes(x=year, y=count, color=`Neighborhood`)) +
   scale_colour_manual(values=c('Claytown' = '#ED9007', 'Airport Sub' = '#8C82FA', 'Brightmoor' = '#6408A1', 'Chadsey Condon' = '#31044F', 'Other' = '#D3D3D3'), 
                        name="Neighborhood", breaks=c("Claytown", "Airport Sub", "Brightmoor", 'Chadsey Condon', 'Other'),
                        labels=c("Claytown", "Airport Sub", "Brightmoor", 'Chadsey Condon', 'Other')) +
@@ -617,6 +585,46 @@ district_own %>%
 
 #'#D3D3D3'
 ```
+
+
+
+
+##Further information
+
+To learn more about Detroit's demolition program, please visit their website [here](https://detroitmi.gov/departments/detroit-building-authority/detroit-demolition-program).
+
+
+
+
+##Data Sources
+
+
+These visualizations were created using data from Detroit's Open Data Portal.
+
+
+Blight violations: Explore [here](https://data.detroitmi.gov/Property-Parcels/Blight-Violations/ti6p-wcg4).
+
+
+Completed Demolitions: Explore [here](https://data.detroitmi.gov/Property-Parcels/Detroit-Demolitions/rv44-e9di).
+
+
+Side Lot Sales: Explore [here](https://data.detroitmi.gov/Property-Parcels/Side-Lot-Sales/mfsk-uw55).
+
+
+Auctions: Explore [here](https://data.detroitmi.gov/Property-Parcels/DLBA-Auctions-Closed/tgwk-njih).
+
+
+Own It Now Sales: Explore [here](http://www.buildingdetroit.org/own-it-now/).
+
+
+Detroit Land Bank Authority Inventory: Explore [here](https://data.detroitmi.gov/Property-Parcels/Land-Bank-Inventory/vsin-ur7i).
+
+
+Detroit City Council Districts: Explore [here](https://data.detroitmi.gov/Government/City-Council-Districts/4vse-9zps).
+
+
+Detroit Neighborhoods: Explore [here](https://data.detroitmi.gov/Government/Detroit-Neighborhoods/5mn6-ihjv).
+
 
 
 
