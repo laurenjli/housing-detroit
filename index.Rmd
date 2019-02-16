@@ -114,60 +114,6 @@ all_counts %>%
 ```
 
 
-##Blight Concentration
-
-
-While blight plagues the entire city, it is more concentrated in some areas than others. The southern tip of District 7 (West Detroit) and the eastern part of District 4 (East Detroit) had a highly concentrated number of blight tickets issued in 2018. As these areas are particularly troubled by blight, we will see later that the city has concentrated demolition efforts there as well.
-
-
-```{r Blight map, fig.align = 'center', results='hide', fig.keep='all', warning = F, message = F, fig.width = 9}
-#Blight Violations by District
-
-f <- 'geo_export_c0cba125-2fb0-432f-9a11-e6bb3c7dd89e.shp'
-
-districts_shp <- st_read(here('detroit_data','City Council Districts',f))
-
-max_long <- range(st_coordinates(districts_shp))[1]
-max_lat <- range(st_coordinates(districts_shp))[2]
-
-blight_2018 <- blight_tix %>% 
-  mutate(year = as.Date(`Violation Date`,format = "%m/%d/%Y")) %>%
-  mutate(year = as.numeric(strftime(year, '%Y'))) %>%
-  filter(year==2018) %>%
-  filter(`Violation Latitude` < max_lat) %>%
-  filter(`Violation Longitude` > max_long)
-
-blight_points <- data.frame('Long' = blight_2018$`Violation Longitude`, 'Lat' = blight_2018$`Violation Latitude`)
-tmp <- st_as_sf(blight_points, coords = c('Long','Lat'), crs=st_crs(districts_shp)[[1]])
-tmp <- st_transform(tmp, crs = st_crs(districts_shp)[[2]])
-tmp <- st_intersection(districts_shp, tmp)
-dots <- data.frame(st_coordinates(tmp))
-
-ggplot() +
-  geom_sf(data = districts_shp, fill = '#31044F', color = 'white') + 
-  geom_point(data = dots, aes(x=X, y=Y), size = 0.25, color = '#ED9007', fill = "#ED9007", alpha=0.75) +
-  annotate('text', x = -83.325, y = 42.42, label = 'District 1', color = 'black', size =3, family = my_theme$text[['family']], fontface='bold') +
-  annotate("segment", x = -83.3, xend = -83.287, y = 42.42, yend = 42.42, color = 'black') +
-  annotate('text', x = -83.17, y = 42.458, label = 'District 2', color = 'black', angle = 2, size = 3, family = my_theme$text[['family']], fontface='bold') +
-  annotate("segment", x = -83.18, xend = -83.19, y = 42.45, yend = 42.444, color = 'black') +
-  annotate('text', x = -83.05, y = 42.458, label = 'District 3', color = 'black', angle = 2, size = 3, family = my_theme$text[['family']], fontface='bold') +
-  annotate("segment", x = -83.05, xend = -83.06, y = 42.451, yend = 42.445, color = 'black') +
-  annotate('text', x = -83.305, y = 42.36, label = 'District 7', color = 'black', size = 3, family = my_theme$text[['family']], fontface='bold') +
-  annotate("segment", x = -83.28, xend = -83.265, y = 42.36, yend = 42.36, color = 'black') +
-  annotate('text', x = -83.05, y = 42.3, label = 'District 6', color = 'black', size = 3, family = my_theme$text[['family']], fontface='bold') +
-  annotate("segment", x = -83.095, xend = -83.073, y = 42.3, yend = 42.3, color = 'black') +
-  annotate('text', x = -83, y = 42.325, label = 'District 5', color = 'black', size = 3, family = my_theme$text[['family']], fontface='bold') +
-  annotate("segment", x = -83.02, xend = -83.01, y = 42.335, yend = 42.33, color = 'black') +
-  annotate('text', x = -82.9, y = 42.38, label = 'District 4', color = 'black', size = 3, family = my_theme$text[['family']], fontface='bold') +
-  annotate("segment", x = -82.94, xend = -82.925, y = 42.38, yend = 42.38, color = 'black') +
-  coord_sf(xlim = c(-83.4, -82.85), ylim = c(42.25, 42.47), expand = FALSE) +
-  map_theme +
-  labs(title = 'High Concentration of Blight in Western and Eastern Detroit', subtitle = '2018 Blight Ticket Violations in Detroit', caption = 'Data Source: Detroit Data Portal') +
-  annotate('point', x = -83.075, y = 42.27, color = '#ED9007', fill = "#ED9007") +
-  annotate('text', x = -83, y = 42.27, label = 'Represents one blight violation', size=3)
-
-```
-
 
 ##Blight Violation Noncompliance
 
@@ -201,10 +147,114 @@ blight_tix %>%
 
 
 
+##Blight Concentration
+
+
+While blight plagues the entire city, it is more concentrated in some areas than others. The southern tip of District 7 (West Detroit) and the eastern part of District 4 (East Detroit) had a highly concentrated number of blight tickets issued in 2018. As these areas are particularly troubled by blight, we will see later that the city has concentrated demolition efforts there as well.
+
+
+```{r Blight map, fig.align = 'center', results='hide', fig.keep='all', warning = F, message = F, fig.width = 9}
+#Blight Violations by District
+
+f <- 'geo_export_c0cba125-2fb0-432f-9a11-e6bb3c7dd89e.shp'
+
+districts_shp <- st_read(here('detroit_data','City Council Districts',f))
+
+max_long <- range(st_coordinates(districts_shp))[1]
+max_lat <- range(st_coordinates(districts_shp))[2]
+
+blight_2018 <- blight_tix %>% 
+  mutate(year = as.Date(`Violation Date`,format = "%m/%d/%Y")) %>%
+  mutate(year = as.numeric(strftime(year, '%Y'))) %>%
+  filter(year==2018) %>%
+  filter(`Violation Latitude` < max_lat) %>%
+  filter(`Violation Longitude` > max_long)
+
+blight_points <- data.frame('Long' = blight_2018$`Violation Longitude`, 'Lat' = blight_2018$`Violation Latitude`)
+tmp <- st_as_sf(blight_points, coords = c('Long','Lat'), crs=st_crs(districts_shp)[[1]])
+tmp <- st_transform(tmp, crs = st_crs(districts_shp)[[2]])
+tmp <- st_intersection(districts_shp, tmp)
+dots <- data.frame(st_coordinates(tmp))
+
+blight_map <- ggplot() +
+  geom_sf(data = districts_shp, fill = '#31044F', color = 'white') + 
+  geom_point(data = dots, aes(x=X, y=Y), size = 0.25, color = '#ED9007', fill = "#ED9007", alpha=0.5) +
+  annotate('text', x = -83.325, y = 42.42, label = 'District 1', color = 'black', size =3, family = my_theme$text[['family']], fontface='bold') +
+  annotate("segment", x = -83.3, xend = -83.287, y = 42.42, yend = 42.42, color = 'black') +
+  annotate('text', x = -83.17, y = 42.458, label = 'District 2', color = 'black', angle = 2, size = 3, family = my_theme$text[['family']], fontface='bold') +
+  annotate("segment", x = -83.18, xend = -83.19, y = 42.45, yend = 42.444, color = 'black') +
+  annotate('text', x = -83.05, y = 42.458, label = 'District 3', color = 'black', angle = 2, size = 3, family = my_theme$text[['family']], fontface='bold') +
+  annotate("segment", x = -83.05, xend = -83.06, y = 42.451, yend = 42.445, color = 'black') +
+  annotate('text', x = -83.305, y = 42.36, label = 'District 7', color = 'black', size = 3, family = my_theme$text[['family']], fontface='bold') +
+  annotate("segment", x = -83.28, xend = -83.265, y = 42.36, yend = 42.36, color = 'black') +
+  annotate('text', x = -83.05, y = 42.3, label = 'District 6', color = 'black', size = 3, family = my_theme$text[['family']], fontface='bold') +
+  annotate("segment", x = -83.095, xend = -83.073, y = 42.3, yend = 42.3, color = 'black') +
+  annotate('text', x = -83, y = 42.325, label = 'District 5', color = 'black', size = 3, family = my_theme$text[['family']], fontface='bold') +
+  annotate("segment", x = -83.02, xend = -83.01, y = 42.335, yend = 42.33, color = 'black') +
+  annotate('text', x = -82.9, y = 42.38, label = 'District 4', color = 'black', size = 3, family = my_theme$text[['family']], fontface='bold') +
+  annotate("segment", x = -82.94, xend = -82.925, y = 42.38, yend = 42.38, color = 'black') +
+  coord_sf(xlim = c(-83.4, -82.85), ylim = c(42.25, 42.47), expand = FALSE) +
+  map_theme +
+  labs(title = 'High Concentration of Blight in Western and Eastern Detroit', subtitle = '2018 Blight Ticket Violations in Detroit', caption = 'Data Source: Detroit Data Portal') +
+  annotate('point', x = -83.075, y = 42.27, color = '#ED9007', fill = "#ED9007") +
+  annotate('text', x = -83, y = 42.27, label = 'Represents one blight violation', size=3)
+
+blight_map
+```
+
+
+
+
 ##Demolition Program
 
 
-To maintain publically-owned blighted and abandoned land, Detroit has one of the largest demolitions programs in the country. The city spends tens of millions of dollars each year to demolish thousands of buildings. Comparing Detroit's demolition program to those of Philadelphia, Cleveland, and Baltimore, cities also plagued by blight and abandoned homes, gives a sense of the scale of Detroit's program. 
+To maintain publically-owned blighted and abandoned land, Detroit has one of the largest demolitions programs in the country. The city spends tens of millions of dollars each year to demolish thousands of buildings. In 2018, council districts 4 and 7 (east and west Detroit respectively) had the highest number of demolitions. As shown above, they also had the highest concentration of blight that year. 
+
+
+```{r, fig.align= 'center', fig.width = 9}
+past_demolitions %<>% 
+  mutate(`Demolition Date` = as.Date(`Demolition Date`,format = "%m/%d/%Y")) %>%
+  mutate(month_year = `Demolition Date`) %>%
+  mutate(year = as.numeric(strftime(`Demolition Date`, '%Y'))) %>%
+  mutate(month = as.numeric(strftime(`Demolition Date`, '%m'))) %>%
+  mutate(month_year = as.Date(paste(strftime(month_year, '%Y-%m-'),'15',sep='')))
+
+sym <- past_demolitions %>%
+  filter(year==2018)
+  #mutate(districts = factor(Council_District)) %>%
+  #group_by(districts) %>%
+  #summarize(count = n())
+
+#cent <- left_join(st_centroid(districts_shp), sym, by = 'districts')
+
+dem_map <- ggplot() +
+  #geom_sf(data = districts_shp, fill = '#31044F', color = 'white') + 
+  geom_sf(data = districts_shp, fill = '#31044F', color = 'white') + 
+  #geom_sf(data= cent, aes(size=count), color = '#ED9007') +
+  geom_point(data = sym, aes(x=Longitude, y=Latitude), color = '#8C82FA', alpha=0.5) +
+  scale_size(range = c(4, 12)) +
+  annotate('text', x = -83.325, y = 42.42, label = 'District 1', color = 'black', size =3, family = my_theme$text[['family']], fontface='bold') +
+    annotate("segment", x = -83.3, xend = -83.287, y = 42.42, yend = 42.42, color = 'black') +
+    annotate('text', x = -83.17, y = 42.458, label = 'District 2', color = 'black', angle = 2, size = 3, family = my_theme$text[['family']], fontface='bold') +
+    annotate("segment", x = -83.18, xend = -83.19, y = 42.45, yend = 42.444, color = 'black') +
+    annotate('text', x = -83.05, y = 42.458, label = 'District 3', color = 'black', angle = 2, size = 3, family = my_theme$text[['family']], fontface='bold') +
+    annotate("segment", x = -83.05, xend = -83.06, y = 42.451, yend = 42.445, color = 'black') +
+    annotate('text', x = -83.305, y = 42.36, label = 'District 7', color = 'black', size = 3, family = my_theme$text[['family']], fontface='bold') +
+    annotate("segment", x = -83.28, xend = -83.265, y = 42.36, yend = 42.36, color = 'black') +
+    annotate('text', x = -83.05, y = 42.3, label = 'District 6', color = 'black', size = 3, family = my_theme$text[['family']], fontface='bold') +
+    annotate("segment", x = -83.095, xend = -83.073, y = 42.3, yend = 42.3, color = 'black') +
+    annotate('text', x = -83, y = 42.325, label = 'District 5', color = 'black', size = 3, family = my_theme$text[['family']], fontface='bold') +
+    annotate("segment", x = -83.02, xend = -83.01, y = 42.335, yend = 42.33, color = 'black') +
+    annotate('text', x = -82.9, y = 42.38, label = 'District 4', color = 'black', size = 3, family = my_theme$text[['family']], fontface='bold') +
+    annotate("segment", x = -82.94, xend = -82.925, y = 42.38, yend = 42.38, color = 'black') +
+    coord_sf(xlim = c(-83.4, -82.85), ylim = c(42.25, 42.47), expand = FALSE) +
+    map_theme +
+    labs(title = 'High Concentration of Demolitions in Western and Eastern Detroit', subtitle = '2018 Demolitions in Detroit', caption = 'Data Source: Detroit Open Data Portal') +
+    annotate('point', x = -83.075, y = 42.27, color = '#8C82FA', fill = "#8C82FA") +
+    annotate('text', x = -83, y = 42.27, label = 'Represents one demolition', size=3)
+
+dem_map
+```
 
 
 ```{r Demolition comparison, warning=F, fig.align='center', echo=F}
@@ -248,10 +298,6 @@ comp <-comparison_per_year %>%
 ```
 
 
-##Demolition Funding
-
-The Hardest Hit Funding program is the largest of the city’s funding sources for its demolition program, which, by law, can be spent only in federally-designated areas of the city. The funds are split across the city to carry out demolitions. In 2018, council districts 4 and 7 (east and west Detroit respectively) had the highest number of demolitions funded by HHF. As shown above, they also had the highest concentration of blight that year. The program has a limit of $25,000 per building so there are some instances in which a house will switch to non-HHF or have city funds used to cover additional costs over the program limit.
-
 
 ```{r demolition funding, fig.align = 'center', results='hide', echo=F}
 library(packcircles)
@@ -287,15 +333,10 @@ circles <- ggplot() +
 
 ##Cost of Demolition
 
+The Hardest Hit Funding program is the largest of the city’s funding sources for its demolition program, which, by law, can be spent only in federally-designated areas of the city. The funds are split across the city to carry out demolitions. The program has a limit of $25,000 per building so there are some instances in which a house will switch to non-HHF or have city funds used to cover additional costs over the program limit.
+
 ```{r demolition distribution, fig.align = 'center', results='hide', fig.keep='all', warning = F, message = F}
 
-past_demolitions %<>% 
-  mutate(`Demolition Date` = as.Date(`Demolition Date`,format = "%m/%d/%Y")) %>%
-  mutate(month_year = `Demolition Date`) %>%
-  mutate(year = as.numeric(strftime(`Demolition Date`, '%Y'))) %>%
-  mutate(month = as.numeric(strftime(`Demolition Date`, '%m'))) %>%
-  mutate(month_year = as.Date(paste(strftime(month_year, '%Y-%m-'),'15',sep=''))) %>%
-  mutate(Council_District = paste('District', Council_District))
 
 non_com <- past_demolitions %>% 
   filter(`Commercial Building` == 'No') %>% 
@@ -359,6 +400,7 @@ hist2 +
   )
 
 ```
+
 
 
 ##Side Lot Sales
@@ -536,7 +578,7 @@ ggplot() +
   geom_sf(data = x, aes(fill=total), lwd=0) + 
   geom_sf(data=border, color = 'white', fill = NA) + 
   annotate("segment", x = -83.068, xend = -83.065, y = 42.3424, yend = 42.337, color = '#31044F') +
-  scale_fill_gradient(name ='Land Sold', low = '#31044F', high = '#ED9007') +
+  scale_fill_gradient(name ='Land Sales', low = '#31044F', high = '#ED9007') +
   map_theme +
   labs(title = 'Public Land Sales Concentrated Outside of Central Detroit', subtitle = '2018 Land Sales through Auctions, Own It Now, and Side Lot Sales Programs \nby Neighborhood', caption = 'Source: Detroit Open Data Portal') +
   annotate('text', x = -82.99, y = 42.315, label = 'Central Detroit', color = 'black', size = 3.5, family = my_theme$text[['family']], fontface='bold')
