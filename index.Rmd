@@ -108,11 +108,11 @@ all_counts %>%
   geom_point(data = counts_over_4500, aes(x=month_year, y=count), color = '#ED9007', size =4, shape='diamond') +
   annotate('text', x=as.Date('2010-07-15'), y=4800, label = 'Blight violations peaked \n during the recession', fontface='bold', size=3, family = my_theme$text[['family']], color = '#ED9007') +
   annotate('text', x=as.Date('2015-07-15'), y=3900, label = 'After reaching lows in 2013 and 2014,\n blight violations have started\n to increase', fontface='bold', size=3, family = my_theme$text[['family']], color = '#ED9007') +
-  scale_x_date(breaks = seq(as.Date("2006-01-15"), as.Date("2018-12-15"), by="6 months"), date_labels = "%b %y") +
+  scale_x_date(breaks = seq(as.Date("2006-01-15"), as.Date("2018-12-15"), by="12 months"), date_labels = "%Y") +
   #scale_x_date(date_labels="%b %y",date_breaks  ="6 month") +
-  theme(axis.text.x = element_text(angle = 60, hjust = 1)) +
+  #theme(axis.text.x = element_text(angle = 60, hjust = 1)) +
   scale_y_continuous(labels=comma) +
-  labs(title = 'Number of Blight Violations are Starting to Reach Recession-Level Highs', subtitle = 'Monthly Blight Violations in Detroit since 2006', x = 'Date', y='Number of Blight Violations', caption = 'Source: Detroit Open Data Portal') 
+  labs(title = 'Number of Blight Violations are Starting to Reach Recession-Level Highs', subtitle = 'Monthly Blight Violations in Detroit since 2006', x = 'Date', y='Number of Blight Violations', caption = 'Data Source: Detroit Open Data Portal') 
 
 
 ```
@@ -122,7 +122,7 @@ all_counts %>%
 ##Blight Violation Noncompliance
 
 
-Detroit is struggling to enforce the maintenance of property standards on privately-owned land. Despite many ticket issuances, noncompliance with blight violations is very high. Since 2006, only about one third of tickets are paid in full each year. 
+Detroit is struggling to enforce the maintenance of property standards on privately-owned land. Despite many ticket issuances, noncompliance with blight violations is very high. Since 2006, only about a quarter of tickets are paid in full each year. 
 
 
 
@@ -144,19 +144,19 @@ blight_tix %>%
   scale_fill_manual(values = c('#ED9007', '#31044F')) +
   scale_x_continuous('Year', breaks =seq(2006,2018,1), labels = c('2006','2007','2008','2009','2010','2011','2012','2013','2014','2015','2016','2017','2018')) +
   scale_y_continuous('Percentage of Tickets', breaks =seq(0,1,0.25), labels = c('0%','25%','50%','75%','100%')) +
-  labs(title='Noncompliance of Blight Tickets Is High', subtitle = 'Blight Violation Payment Status by Year', caption = 'Source: Detroit Open Data Portal\nNote: Tickets with NA Payment Status are included in the Not Paid in Full category', y = 'Number of Blight Tickets', fill = 'Ticket Paid in Full') 
+  labs(title='Only 25% Of Blight Tickets Are Paid in Full', subtitle = 'Blight Violation Payment Status by Year', caption = 'Data Source: Detroit Open Data Portal\nNote: Tickets with NA Payment Status are included in the Not Paid in Full category', y = 'Number of Blight Tickets', fill = 'Ticket Paid in Full')
 
 ```
 
 
 
 
-##Relationship between Blight Violations and the Demolitions Program
+##Relationship Between Blight Violations and the Demolitions Program
 
 
-While blight plagues the entire city, it is more concentrated in some areas than others. The southern tip of District 7 (West Detroit) and the eastern part of District 4 (East Detroit) had a highly concentrated number of blight tickets issued in 2018. 
+While blight plagues the entire city, it is more concentrated in some areas than others. The southern tip of District 7 (West Detroit) and the eastern part of District 4 (East Detroit) had a highly concentrated number of blight tickets issued in 2018.
 
-To maintain publically-owned blighted and abandoned land, Detroit has one of the largest demolitions programs in the country. The city spends tens of millions of dollars each year to demolish thousands of buildings. In 2018, council districts 4 and 7 (east and west Detroit respectively) had the highest number of demolitions. As noted, they also had the highest concentration of blight that year. 
+To maintain publically-owned blighted and abandoned land, Detroit has one of the largest demolitions programs in the country. The city spends tens of millions of dollars each year to demolish thousands of buildings. Notably, the city's demolition efforts and blight violations are concentrated in the same areas (Districts 4 and 7).
 
 You can compare the concentration of blight and demolitions in 2018 in the two visualizations below.
 
@@ -203,7 +203,7 @@ blight_map <- ggplot() +
   annotate("segment", x = -82.94, xend = -82.925, y = 42.38, yend = 42.38, color = 'black') +
   coord_sf(xlim = c(-83.4, -82.85), ylim = c(42.25, 42.47), expand = FALSE) +
   map_theme +
-  labs(title = 'High Concentration of Blight in Districts 4 and 7', subtitle = '2018 Blight Ticket Violations in Detroit', caption = 'Data Source: Detroit Data Portal') +
+  labs(title = 'High Concentration of Blight in Districts 4 and 7', subtitle = '2018 Blight Ticket Violations in Detroit', caption = 'Data Source: Detroit Open Data Portal') +
   annotate('point', x = -83.075, y = 42.27, color = '#ED9007', fill = "#ED9007") +
   annotate('text', x = -83, y = 42.27, label = 'Represents one blight violation', size=3)
 
@@ -240,7 +240,7 @@ dem_map <- ggplot() +
   #geom_sf(data= cent, color = '#ED9007', fill = '#ED9007') + 
   #geom_sf_text(data = all, aes(label = count), colour = "black") +
   geom_point(data = sym, aes(x=Longitude, y=Latitude), size = 0.85, color = '#8C82FA', alpha=0.5) +
-  geom_sf_label(data = all, aes(label = count), color = 'black', size = 2) +
+  geom_sf_label(data = all, aes(label = count), color = 'white', size = 3, fill = NA) +
   scale_size(range = c(4, 12)) +
   annotate('text', x = -83.325, y = 42.42, label = 'District 1', color = 'black', size =3, family = my_theme$text[['family']], fontface='bold') +
     annotate("segment", x = -83.3, xend = -83.287, y = 42.42, yend = 42.42, color = 'black') +
@@ -316,7 +316,8 @@ non_com <- past_demolitions %>%
 box <- ggplot() +
   geom_boxplot(data = non_com, aes(y=Price), color = "#31044F", fill = "#31044F", alpha=0.75, 
                outlier.colour = '#ED9007') + 
-  coord_flip() + 
+  annotate('segment', x=0, xend=0, y=25000, yend=28000, color = '#ED9007') +
+  coord_flip() +
   scale_y_continuous(expand=c(0,0), limits = c(0,80000)) +
   my_theme +
   theme(axis.text.y = element_blank(),
@@ -337,9 +338,9 @@ hist2 <- ggplot(data=non_com) +
   geom_histogram(aes(x=Price), fill = colors) + 
   #geom_histogram(data=non_com%>%filter(Price >25000), aes(x=Price), fill='#ED9007') +
   my_theme +
-  scale_y_continuous(expand=c(0,0), limits= c(-1000,3950), breaks=seq(0,3000,1000), labels=comma) + 
+  scale_y_continuous(expand=c(0,0), limits= c(-1000,4000), breaks=seq(0,4000,1000), labels=comma) + 
   #scale_x_continuous(expand=c(0,0), limits = c(0,85000), labels=comma) +
-  scale_x_continuous(expand=c(0,0), labels=comma, limits = c(0,85000)) +
+  scale_x_continuous(expand=c(0,0), labels=comma, limits = c(0,85000), breaks=seq(0,85000,10000)) +
   #geom_vline(xintercept = 14700, linetype="dashed", color = "#ED9007") +  #add one for HHF limit
   labs(title = 'Most Demolitions Fall Under The Hardest-Hit Fund Limit Of $25,000\nBut There Are Expensive Outliers', subtitle='Distribution of Cost per Non-Commercial Demolition from 2014 to 2018\n', caption = 'Data Source: Detroit Open Data Portal', y = 'Number of Non-Commercial Demolitions', x = 'Cost') +
   annotate('segment', x =14235, xend = 14235, y =0, yend = 3750, color = '#6408A1', linetype='dashed') +
@@ -422,7 +423,9 @@ side_lot_sales %>%
   my_theme + 
   theme(legend.position = c(0.92,0.9),legend.key=element_blank()) + 
   scale_x_continuous(expand=c(0,0), lim = c(2015,2018.02)) + scale_y_continuous(expand=c(0,0), lim = c(0,250)) +
-  labs(title = 'Claytown Has the Largest Number of Side Lot Sales,\nFollowed by Airport Sub, Brightmoor, And Chadsey Condon ', subtitle ='Side Lot Sales by Neighborhood since 2015', x='Year', y='Number of Side Lots Sold', caption='Data Source: Detroit Open Data Portal') 
+  labs(title = 'Claytown Has the Largest Number of Side Lot Sales', subtitle ='Side Lot Sales by Neighborhood since 2015', x='Year', y='Number of Side Lots Sold', caption = 'Data Source: Detroit Open Data Portal') +
+  annotate('text', x=2015.9, y = 180, label ='Claytown has consistently \nsold the highest number of side lots.', color = '#ED9007', size=3) +
+  annotate('text', x=2017, y = 135, label ='Airport Sub, Brightmoor, and Chadsey Condon also \nhave higher sales than most other neighborhoods.', color = '#6408A1', size=3)
 
 ```
 
@@ -468,15 +471,25 @@ c <- side_lot_sales %>%
 
 all_three <- rbind(a,b)
 all_three <- rbind(all_three,c)
-  
+
 
 ggplot(all_three, aes(x=year, y=count)) + 
-  geom_bar(stat='identity', fill = '#31044F') + geom_line(color='#ED9007', size=2) +
+  geom_bar(stat='identity') + #geom_line(color='#ED9007', size=2) +
+  #scale_colour_manual(values=c('Auctions' = '#8C82FA', '"Own It Now" Sale' = '#6408A1', 'Side Lot Sales' = '#31044F'),
+                       #name="Neighborhood", breaks=c('Auctions', '"Own It Now" Sales', 'Side Lot Sales'),
+                       #labels=c('Auctions', '"Own It Now" Sales', 'Side Lot Sales')) +
   facet_grid(cols = vars(factor(category, levels = c('Auctions', '"Own It Now" Sale', 'Side Lot Sale')))) + 
+  aes(fill = as.factor(category)) +
+  scale_fill_manual(values=c('#6408A1','#8C82FA', '#31044F')) +
   my_theme + 
-  theme(strip.text = element_text(face='bold', color = '#ED9007', size=10), strip.background = element_rect(fill='white',color='white')) +
-  scale_y_continuous(expand=c(0,0), labels=comma) + scale_x_continuous(expand=c(0,0)) +
+  theme(strip.background = element_rect(fill='white',color='black'), 
+        panel.border = element_rect(colour = "black", fill = NA), 
+        legend.position = 'none',
+        panel.spacing = unit(2, 'lines')) +
+  scale_y_continuous(expand=c(0,0), labels=comma, limits = c(0,3000)) + scale_x_continuous(expand=c(0,0)) +
   labs(title = 'Auctions and "Own It Now" Sales Are Increasing\nbut Side Lot Sales Are More Common', subtitle = 'Properties Sold through Detroit Land Bank Authority Programs Each Year', caption = 'Data Source: Detroit Open Data Portal', x='Year', y='Number of Properties Sold')
+
+
 
 ```
 
@@ -548,7 +561,7 @@ ggplot() +
   annotate("segment", x = -83.068, xend = -83.065, y = 42.3424, yend = 42.337, color = '#31044F') +
   scale_fill_gradient(name ='Land Sales', low = '#31044F', high = '#ED9007') +
   map_theme +
-  labs(title = 'Public Land Sales Concentrated Outside of Central Detroit', subtitle = '2018 Land Sales through Auctions, Own It Now, and Side Lot Sales Programs \nby Neighborhood', caption = 'Source: Detroit Open Data Portal') +
+  labs(title = 'Public Land Sales Concentrated Outside of Central Detroit', subtitle = '2018 Land Sales through Auctions, Own It Now, and Side Lot Sales Programs \nby Neighborhood', caption = 'Data Source: Detroit Open Data Portal') +
   annotate('text', x = -82.99, y = 42.315, label = 'Central Detroit', color = 'black', size = 3.5, family = my_theme$text[['family']], fontface='bold')
 
 
@@ -589,7 +602,7 @@ district_own %>%
 
 
 
-##Further information
+##Further Information
 
 To learn more about Detroit's demolition program, please visit their website [here](https://detroitmi.gov/departments/detroit-building-authority/detroit-demolition-program).
 
@@ -624,7 +637,4 @@ Detroit City Council Districts: Explore [here](https://data.detroitmi.gov/Govern
 
 
 Detroit Neighborhoods: Explore [here](https://data.detroitmi.gov/Government/Detroit-Neighborhoods/5mn6-ihjv).
-
-
-
 
