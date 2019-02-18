@@ -229,7 +229,7 @@ all <- left_join(districts_shp, ct, by = 'districts')
 
 dem_map <- ggplot() +
   geom_sf(data = all, fill = '#31044F', color = 'white') + 
-  geom_point(data = sym, aes(x=Longitude, y=Latitude), size = 0.85, color = '#8C82FA', alpha=0.25) +
+  geom_point(data = sym, aes(x=Longitude, y=Latitude), size = 0.85, color = '#8C82FA', alpha=0.5) +
   geom_sf_label(data = all, aes(label = count), color = 'white', size = 3, fill = NA) +
   scale_size(range = c(4, 12)) +
   annotate('text', x = -83.325, y = 42.42, label = 'District 1', color = 'black', size =3, family = my_theme$text[['family']], fontface='bold') +
