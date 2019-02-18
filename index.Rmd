@@ -137,9 +137,9 @@ blight_tix %>%
   geom_bar(stat='identity', position='fill') +
   my_theme +
   scale_fill_manual(values = c('#ED9007', '#31044F')) +
-  scale_x_continuous('Year', breaks =seq(2006,2018,1), labels = c('2006','2007','2008','2009','2010','2011','2012','2013','2014','2015','2016','2017','2018')) +
-  scale_y_continuous('Percentage of Tickets', breaks =seq(0,1,0.25), labels = c('0%','25%','50%','75%','100%')) +
-  labs(title='Only 25% Of Blight Tickets Are Paid in Full', subtitle = 'Blight Violation Payment Status by Year', caption = 'Data Source: Detroit Open Data Portal\nNote: Tickets with NA Payment Status are included in the Not Paid in Full category', y = 'Number of Blight Tickets', fill = 'Ticket Paid in Full')
+  scale_x_continuous('Year', expand = c(0,0), breaks =seq(2006,2018,1), labels = c('2006','2007','2008','2009','2010','2011','2012','2013','2014','2015','2016','2017','2018')) +
+  scale_y_continuous('Percentage of Tickets', expand = c(0,0), breaks =seq(0,1,0.25), labels = c('0%','25%','50%','75%','100%')) +
+  labs(title='Only About 25% Of Blight Tickets Are Paid in Full', subtitle = 'Blight Violation Payment Status by Year', caption = 'Data Source: Detroit Open Data Portal\nNote: Tickets with NA Payment Status are included in the Not Paid in Full category', y = 'Number of Blight Tickets', fill = 'Ticket Paid in Full')
 
 ```
 
@@ -183,7 +183,7 @@ dots <- data.frame(st_coordinates(tmp))
 
 blight_map <- ggplot() +
   geom_sf(data = districts_shp, fill = '#31044F', color = 'white') + 
-  geom_point(data = dots, aes(x=X, y=Y), size = 0.6, color = '#ED9007', fill = "#ED9007", alpha=0.5) +
+  geom_point(data = dots, aes(x=X, y=Y), size = 0.6, color = '#ED9007', fill = "#ED9007", alpha=0.25) +
   annotate('text', x = -83.325, y = 42.42, label = 'District 1', color = 'black', size =3, family = my_theme$text[['family']], fontface='bold') +
   annotate("segment", x = -83.3, xend = -83.287, y = 42.42, yend = 42.42, color = 'black') +
   annotate('text', x = -83.17, y = 42.458, label = 'District 2', color = 'black', angle = 2, size = 3, family = my_theme$text[['family']], fontface='bold') +
@@ -229,7 +229,7 @@ all <- left_join(districts_shp, ct, by = 'districts')
 
 dem_map <- ggplot() +
   geom_sf(data = all, fill = '#31044F', color = 'white') + 
-  geom_point(data = sym, aes(x=Longitude, y=Latitude), size = 0.85, color = '#8C82FA', alpha=0.5) +
+  geom_point(data = sym, aes(x=Longitude, y=Latitude), size = 0.85, color = '#8C82FA', alpha=0.25) +
   geom_sf_label(data = all, aes(label = count), color = 'white', size = 3, fill = NA) +
   scale_size(range = c(4, 12)) +
   annotate('text', x = -83.325, y = 42.42, label = 'District 1', color = 'black', size =3, family = my_theme$text[['family']], fontface='bold') +
