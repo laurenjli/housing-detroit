@@ -329,7 +329,7 @@ hist2 <- ggplot(data=non_com) +
   my_theme +
   scale_y_continuous(expand=c(0,0), limits= c(-1000,4000), breaks=seq(0,4000,1000), labels=comma) + 
   scale_x_continuous(expand=c(0,0), labels=comma, limits = c(0,85000), breaks=seq(0,85000,10000)) +
-  labs(title = 'Most Demolitions Fall Under The Hardest-Hit Fund Limit Of $25,000\nBut There Are Expensive Outliers', subtitle='Distribution of Cost per Non-Commercial Demolition from 2014 to 2018\n', caption = 'Data Source: Detroit Open Data Portal', y = 'Number of Non-Commercial Demolitions', x = 'Cost') +
+  labs(title = 'Most Demolitions Fall Under The Hardest-Hit Fund Limit Of $25,000,\nBut There Are Expensive Outliers', subtitle='Distribution of Cost per Non-Commercial Demolition from 2014 to 2018\n', caption = 'Data Source: Detroit Open Data Portal', y = 'Number of Non-Commercial Demolitions', x = 'Cost') +
   annotate('segment', x =14235, xend = 14235, y =0, yend = 3750, color = '#6408A1', linetype='dashed') +
   annotate('segment', x =25000, xend = 25000, y =0, yend = 3750, color = "#ED9007", linetype= 'dashed') +
   annotate('rect', xmin=29000, xmax=59000, ymin= 2750, ymax=3250, color = '#6408A1', fill = NA) +
@@ -469,7 +469,7 @@ ggplot(all_three, aes(x=year, y=count)) +
         legend.position = 'none',
         panel.spacing = unit(2, 'lines')) +
   scale_y_continuous(expand=c(0,0), labels=comma, limits = c(0,3000)) + scale_x_continuous(expand=c(0,0)) +
-  labs(title = 'Auctions and "Own It Now" Sales Are Increasing\nbut Side Lot Sales Are More Common', subtitle = 'Properties Sold through Detroit Land Bank Authority Programs Each Year', caption = 'Data Source: Detroit Open Data Portal', x='Year', y='Number of Properties Sold')
+  labs(title = 'Auctions and "Own It Now" Sales Are Increasing,\nBut Side Lot Sales Are More Common', subtitle = 'Properties Sold through Detroit Land Bank Authority Programs Each Year', caption = 'Data Source: Detroit Open Data Portal', x='Year', y='Number of Properties Sold')
 
 
 
@@ -543,7 +543,7 @@ ggplot() +
   annotate("segment", x = -83.068, xend = -83.065, y = 42.3424, yend = 42.337, color = '#31044F') +
   scale_fill_gradient(name ='Land Sales', low = '#31044F', high = '#ED9007') +
   map_theme +
-  labs(title = 'Public Land Sales Concentrated Outside of Central Detroit', subtitle = '2018 Land Sales through Auctions, Own It Now, and Side Lot Sales Programs \nby Neighborhood', caption = 'Data Source: Detroit Open Data Portal') +
+  labs(title = 'Public Land Sales Are Concentrated Outside of Central Detroit', subtitle = '2018 Land Sales through Auctions, Own It Now, and Side Lot Sales Programs \nby Neighborhood', caption = 'Data Source: Detroit Open Data Portal') +
   annotate('text', x = -82.99, y = 42.315, label = 'Central Detroit', color = 'black', size = 3.5, family = my_theme$text[['family']], fontface='bold')
 
 
