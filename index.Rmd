@@ -155,6 +155,8 @@ To maintain publically-owned blighted and abandoned land, Detroit has one of the
 
 You can compare the concentration of blight and demolitions in 2018 in the two visualizations below.
 
+*If you are interested in why the map of Detroit has a large gap in the middle of the city, check out this [article provided by the WDET](https://wdet.org/posts/2014/09/19/80119-why-do-hamtramck-and-highland-park-exist-inside-the-city-of-detroit/)!
+
 
 ```{r Blight map, fig.align = 'center', results='hide', fig.keep='all', warning = F, message = F, fig.width = 9}
 #Blight Violations by District
