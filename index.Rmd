@@ -250,7 +250,7 @@ dem_map <- ggplot() +
     map_theme +
     labs(title = 'Districts 4 and 7 Also Had the Highest Number of Demolitions', subtitle = '2018 Demolitions in Detroit', caption = 'Data Source: Detroit Open Data Portal') +
     annotate('point', x = -83.075, y = 42.27, color = '#8C82FA', fill = "#8C82FA") +
-    annotate('text', x = -83, y = 42.27, label = 'Represents one demolition', size=3)
+    annotate('text', x = -83.005, y = 42.27, label = 'Represents one demolition', size=3)
 
 dem_map
 ```
