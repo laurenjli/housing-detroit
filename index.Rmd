@@ -107,7 +107,7 @@ all_counts %>%
   annotate('text', x=as.Date('2015-07-15'), y=3900, label = 'After reaching lows in 2013 and 2014,\n blight violations have started\n to increase', fontface='bold', size=3, family = my_theme$text[['family']], color = '#ED9007') +
   scale_x_date(breaks = seq(as.Date("2006-01-15"), as.Date("2018-12-15"), by="12 months"), date_labels = "%Y") +
   scale_y_continuous(labels=comma) +
-  labs(title = 'Number of Blight Violations are Starting to Reach Recession-Level Highs', subtitle = 'Monthly Blight Violations in Detroit since 2006', x = 'Date', y='Number of Blight Violations', caption = 'Data Source: Detroit Open Data Portal') 
+  labs(title = 'Number of Blight Violations are Starting to Reach Recession-Level Highs', subtitle = 'Monthly Blight Violations in Detroit since 2006', x = 'Year', y='Number of Blight Violations', caption = 'Data Source: Detroit Open Data Portal') 
 
 
 ```
@@ -553,7 +553,7 @@ ggplot() +
 
 ##Detroit Land Bank Inventory
 
-Lack of public land sales in the Downtown Detroit area is not necessarily due to lack of interest in the central part of the city. In fact, the downtown area has the most city-owned vacant land that is not for sale. The buildup of city-owned land that is not on the market is often a frustrating barrier for those interested in buying property in the city. A large portion of the Detroit Land Bank Authority's inventory is categorized as Vacant Land as opposed to property that is for sale to private owners. There is a particularly high number of Vacant Land properties compared to other inventory types in District 5, which is the downtown Detroit area.
+Lack of public land sales in the Downtown Detroit area is not necessarily due to lack of interest in the central part of the city. In fact, the downtown area has the most city-owned vacant land that is not for sale. The buildup of city-owned land that is not on the market is often a frustrating barrier for those interested in buying property in the city. A large portion of the Detroit Land Bank Authority's inventory is categorized as Vacant Land as opposed to property that is for sale to private owners. There is a particularly high number of Vacant Land properties compared to other inventory types in District 5, which includes the downtown Detroit area.
 
 
 ```{r heatmap, fig.width=9, fig.height=6, fig.align='center'}
@@ -609,7 +609,7 @@ Side Lot Sales: Explore [here](https://data.detroitmi.gov/Property-Parcels/Side-
 Auctions: Explore [here](https://data.detroitmi.gov/Property-Parcels/DLBA-Auctions-Closed/tgwk-njih).
 
 
-Own It Now Sales: Explore [here](http://www.buildingdetroit.org/own-it-now/).
+Own It Now Sales: Explore [here](https://data.detroitmi.gov/Property-Parcels/Own-It-Now-Sales/pyf3-v3vc).
 
 
 Detroit Land Bank Authority Inventory: Explore [here](https://data.detroitmi.gov/Property-Parcels/Land-Bank-Inventory/vsin-ur7i).
