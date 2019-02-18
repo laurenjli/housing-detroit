@@ -29,10 +29,7 @@ side_lot_sales <- read_csv(here('detroit_data','Side_Lot_Sales.csv'))
 own_it_now <- read_csv(here('detroit_data','Own_It_Now_Sales.csv'))
 auctions <- read_csv(here('detroit_data','DLBA_Auctions_Closed.csv'))
 past_demolitions <- read_csv(here('detroit_data', 'Detroit_Demolitions.csv'))
-#philly <- read_csv(here('detroit_data','li_demolitions.csv'))
 land_inv <- read_csv(here('detroit_data', 'Land_Bank_Inventory.csv'))
-#contracted <- read_csv(here('detroit_data', 'Upcoming_Demolitions.csv'))
-#planned <- read_csv(here('detroit_data', 'Demolition_Pipeline.csv'))
 ```
 
 
@@ -109,8 +106,6 @@ all_counts %>%
   annotate('text', x=as.Date('2010-07-15'), y=4800, label = 'Blight violations peaked \n during the recession', fontface='bold', size=3, family = my_theme$text[['family']], color = '#ED9007') +
   annotate('text', x=as.Date('2015-07-15'), y=3900, label = 'After reaching lows in 2013 and 2014,\n blight violations have started\n to increase', fontface='bold', size=3, family = my_theme$text[['family']], color = '#ED9007') +
   scale_x_date(breaks = seq(as.Date("2006-01-15"), as.Date("2018-12-15"), by="12 months"), date_labels = "%Y") +
-  #scale_x_date(date_labels="%b %y",date_breaks  ="6 month") +
-  #theme(axis.text.x = element_text(angle = 60, hjust = 1)) +
   scale_y_continuous(labels=comma) +
   labs(title = 'Number of Blight Violations are Starting to Reach Recession-Level Highs', subtitle = 'Monthly Blight Violations in Detroit since 2006', x = 'Date', y='Number of Blight Violations', caption = 'Data Source: Detroit Open Data Portal') 
 
@@ -223,22 +218,15 @@ past_demolitions %<>%
 sym <- past_demolitions %>%
   filter(year==2018) 
 
-#tot <- nrow(sym)
-
 ct <- sym %>%
-  mutate(districts = factor(Council_District)) %>%
+  mutate(districts = as.factor(Council_District)) %>%
   group_by(districts) %>%
-  summarize(count = n())
+  summarize(count=n())
 
 all <- left_join(districts_shp, ct, by = 'districts')
-#cent <- all %>% filter(districts == 4 | districts == 7)
 
 dem_map <- ggplot() +
-  #geom_sf(data = districts_shp, fill = '#31044F', color = 'white') + 
   geom_sf(data = all, fill = '#31044F', color = 'white') + 
-  #geom_sf(data= cent, color = '#ED9007', fill = '#ED9007') +
-  #geom_sf(data= cent, color = '#ED9007', fill = '#ED9007') + 
-  #geom_sf_text(data = all, aes(label = count), colour = "black") +
   geom_point(data = sym, aes(x=Longitude, y=Latitude), size = 0.85, color = '#8C82FA', alpha=0.5) +
   geom_sf_label(data = all, aes(label = count), color = 'white', size = 3, fill = NA) +
   scale_size(range = c(4, 12)) +
@@ -301,7 +289,7 @@ circles <- ggplot() +
 
 ##Cost of Demolition
 
-The Hardest Hit Funding program is the largest of the city’s funding sources for its demolition program, which, by law, can be spent only in federally-designated areas of the city. The funds are split across the city to carry out demolitions. The program has a limit of $25,000 per building so there are some instances in which a house will switch to non-HHF or have city funds used to cover additional costs over the program limit.
+The Hardest Hit Funding program is the largest of the city’s funding sources for its demolition program, which, by law, can be spent only in federally-designated areas of the city. The funds are split across the city to carry out demolitions. The program has a limit of $25,000 per building so there are cases in which a house switches to non-HHF or uses city funds to cover additional costs exceeding the program limit.
 
 ```{r demolition distribution, fig.align = 'center', results='hide', fig.keep='all', warning = F, message = F}
 
@@ -336,16 +324,12 @@ colors <- c(rep('#31044F', 9), rep('#ED9007',21))
 
 hist2 <- ggplot(data=non_com) + 
   geom_histogram(aes(x=Price), fill = colors) + 
-  #geom_histogram(data=non_com%>%filter(Price >25000), aes(x=Price), fill='#ED9007') +
   my_theme +
   scale_y_continuous(expand=c(0,0), limits= c(-1000,4000), breaks=seq(0,4000,1000), labels=comma) + 
-  #scale_x_continuous(expand=c(0,0), limits = c(0,85000), labels=comma) +
   scale_x_continuous(expand=c(0,0), labels=comma, limits = c(0,85000), breaks=seq(0,85000,10000)) +
-  #geom_vline(xintercept = 14700, linetype="dashed", color = "#ED9007") +  #add one for HHF limit
   labs(title = 'Most Demolitions Fall Under The Hardest-Hit Fund Limit Of $25,000\nBut There Are Expensive Outliers', subtitle='Distribution of Cost per Non-Commercial Demolition from 2014 to 2018\n', caption = 'Data Source: Detroit Open Data Portal', y = 'Number of Non-Commercial Demolitions', x = 'Cost') +
   annotate('segment', x =14235, xend = 14235, y =0, yend = 3750, color = '#6408A1', linetype='dashed') +
   annotate('segment', x =25000, xend = 25000, y =0, yend = 3750, color = "#ED9007", linetype= 'dashed') +
-  #annotate('segment', x =14700, xend = 30000, y =3200, yend = 3200, color = '#ED9007') +
   annotate('rect', xmin=29000, xmax=59000, ymin= 2750, ymax=3250, color = '#6408A1', fill = NA) +
   annotate('rect', xmin=39000, xmax=69000, ymin= 1750, ymax=2250, color = "#ED9007", fill = NA) +
   annotate('text', x = 44000, y =3000, color = '#6408A1', label = 'Median Cost: ~$14,000', size=3, 
@@ -408,7 +392,6 @@ avg <- side_lot_sales %>%
   
 
 #line graph: Side lot sales by (select) neighborhood and year
-#next: look at this compared to inventory
 side_lot_sales %>%
   group_by(`Neighborhood`, year) %>%
   filter(year >= 2015) %>%
@@ -474,10 +457,7 @@ all_three <- rbind(all_three,c)
 
 
 ggplot(all_three, aes(x=year, y=count)) + 
-  geom_bar(stat='identity') + #geom_line(color='#ED9007', size=2) +
-  #scale_colour_manual(values=c('Auctions' = '#8C82FA', '"Own It Now" Sale' = '#6408A1', 'Side Lot Sales' = '#31044F'),
-                       #name="Neighborhood", breaks=c('Auctions', '"Own It Now" Sales', 'Side Lot Sales'),
-                       #labels=c('Auctions', '"Own It Now" Sales', 'Side Lot Sales')) +
+  geom_bar(stat='identity') + 
   facet_grid(cols = vars(factor(category, levels = c('Auctions', '"Own It Now" Sale', 'Side Lot Sale')))) + 
   aes(fill = as.factor(category)) +
   scale_fill_manual(values=c('#6408A1','#8C82FA', '#31044F')) +
@@ -498,7 +478,7 @@ ggplot(all_three, aes(x=year, y=count)) +
 
 ##Land Sales Across Detroit
 
-While the Detroit Land Bank Authority has increased its land sales over the past couple of years, the sales are not evenly distributed among areas within Detroit. Specifically, a large number of sales occurred in Western and Eastern Detroit but very few in the central and Downtown areas. It is worth noting that Western and Eastern Detroit also had the highest number of blight violations in 2018.
+While the Detroit Land Bank Authority has increased its land sales over the past couple of years, the sales are not evenly distributed among areas within Detroit. Specifically, a large number of sales occurred in Western and Eastern Detroit but very few in the central and Downtown areas. It is worth noting that Western and Eastern Detroit also had the highest number of blight violations and demolitions in 2018.
 
 
 ```{r choropleth, fig.align = 'center', results='hide', fig.keep='all', warning = F, fig.length = 9}
@@ -571,7 +551,7 @@ ggplot() +
 
 ##Detroit Land Bank Inventory
 
-Lack of public land sales in the Downtown Detroit area is not necessarily due to lack of interest in the central part of the city. In fact, the downtown area has the most city-owned vacant land that is not for sale. The buildup of city-owned land that is not for sale is often a frustrating barrier for those interested in buying property in the city. It is worth noting that a large portion of the Detroit Land Bank Authority's inventory is categorized as Vacant Land as opposed to property that is for sale to private owners. There is a particularly high number of Vacant Land properties compared to other inventory types in District 5, which is the downtown Detroit area.
+Lack of public land sales in the Downtown Detroit area is not necessarily due to lack of interest in the central part of the city. In fact, the downtown area has the most city-owned vacant land that is not for sale. The buildup of city-owned land that is not on the market is often a frustrating barrier for those interested in buying property in the city. A large portion of the Detroit Land Bank Authority's inventory is categorized as Vacant Land as opposed to property that is for sale to private owners. There is a particularly high number of Vacant Land properties compared to other inventory types in District 5, which is the downtown Detroit area.
 
 
 ```{r heatmap, fig.width=9, fig.height=6, fig.align='center'}
@@ -596,7 +576,7 @@ district_own %>%
   geom_text(aes(label = count), color = 'white', size=3, family = my_theme$text[['family']], fontface='bold') +
   theme(axis.text.x = element_text(angle = 60, hjust = 1, vjust=1))
 
-#'#D3D3D3'
+
 ```
 
 
